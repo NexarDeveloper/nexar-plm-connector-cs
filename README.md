@@ -1,2 +1,2 @@
-# nexar-plm-connector-cs-
+# nexar-plm-connector-cs
 A C# version of the generic PLM connector
