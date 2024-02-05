@@ -36,6 +36,8 @@ jobs:
   deploy:
     # Add a dependency to the build job
     needs: build
+    # Run the deployment only on merge/push to main
+    if: github.event_name == 'push'
 
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
