@@ -1,3 +1,2 @@
-
-# PLACEHOLDER
-TODO: Add .NET projects to *src* folder and run `docfx` to generate a **REAL** *API Documentation*!
+# API Documentation for Nexar Generic PLM Connector
+This is the API reference documentation for **Nexar Generic PLM Connector**.

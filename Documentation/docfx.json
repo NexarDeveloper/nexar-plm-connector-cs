@@ -17,6 +17,14 @@
     }
   ],
   "build": {
+    "globalMetadata": {
+      "_appFaviconPath": "images/favicon.ico",
+      "_appLogoPath": "images/logo.svg",
+      "_enableSearch": true,
+      "_disableSideFilter": false,
+      "_disableContribution": false,
+      "_disableBreadcrumb": false
+    },
     "content": [
       {
         "files": [
