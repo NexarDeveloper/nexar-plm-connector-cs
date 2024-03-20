@@ -1,11 +1,10 @@
 # Nexar Generic PLM Connector
 
 Nexar Generic PLM Connector framework is a reference implementation of a gRPC server 
-that can be plugged into the Altium ecosystem and provide an integration with 
+that can be plugged into the Altium ecosystem and provide integration with 
 the unsupported PLM system. 
 
-Generic Connector is distributed as a [C#](https://github.com/NexarDeveloper/nexar-plm-connector-cs) 
-or [Java](https://github.com/NexarDeveloper/nexar-plm-connector-java) service application, 
+Generic Connector is distributed as a [C#](https://github.com/NexarDeveloper/nexar-plm-connector-cs) service application, 
 associated documentation, and example configuration files. Generic Connector framework comes 
 with two working examples of integration with Arena PLM and a simple file system storage - 
 something that can be deployed and connected to the Altium ecosystem - a great starting point 
