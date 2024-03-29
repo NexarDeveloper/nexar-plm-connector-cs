@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
-
-namespace CustomPLMDriver
+namespace FilesystemPLMDriver
 {
     public class MetadataConfig
     {

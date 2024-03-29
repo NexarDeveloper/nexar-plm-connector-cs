@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
-
-namespace CustomPLMDriver
+using FilesystemPLMDriver.Models;
+namespace FilesystemPLMDriver
 {
-    public class ItemRepository
+    public class ItemRepository(string basePath)
     {
         private const string ItemsFolderName = "items";
         private const string ChangesFolderName = "changes";
@@ -14,42 +14,35 @@ namespace CustomPLMDriver
         private const string ChangeXml = "change.xml";
         private const string Sep = "-";
 
-        private XmlSerializer serializer = new XmlSerializer(typeof(ItemDto));
-        private XmlSerializer basicSerializer = new XmlSerializer(typeof(ObjectDto));
-        private string url;
-
-        public ItemRepository(string url)
-        {
-            this.url = url;
-        }
+        private readonly XmlSerializer serializer = new(typeof(ItemDto));
+        private readonly XmlSerializer basicSerializer = new(typeof(ObjectDto));
 
         public string Store(ObjectDto dto)
         {
-            var change = !(dto is ItemDto);
-            PopulateIdIfMissing(dto, url, change);
-            var targetDir = GetTargetDir(dto.Id, url, change);
+            var change = dto is not ItemDto;
+            PopulateIdIfMissing(dto, change);
+            var targetDir = GetTargetDir(dto.Id, change);
 
             StoreAttachments(dto, targetDir);
 
-            TextWriter writer = new StreamWriter(Path.Combine(targetDir, change ? ChangeXml : ItemXml));
+            var writer = new StreamWriter(Path.Combine(targetDir, change ? ChangeXml : ItemXml));
             var xml = change ? basicSerializer : serializer;
             xml.Serialize(writer, dto);
             writer.Close();
 
             return dto.Id.AlternateId;
-
         }
 
         public void DeleteItem(IdDto id, bool isChange)
         {
-            var targetDir = GetTargetDir(id, url, isChange);
+            var targetDir = GetTargetDir(id, isChange);
             Directory.Delete(targetDir, true);
         }
 
-        public ObjectDto Load(String plmId, bool changes)
+        public ObjectDto Load(string plmId, bool changes)
         {
-            var folder = FindFolderByPlmId(plmId, url, changes);
-            if (folder == null)
+            var folder = FindFolderByPlmId(plmId, changes);
+            if (folder is null)
             {
                 return null;
             }
@@ -71,7 +64,7 @@ namespace CustomPLMDriver
         public IEnumerable<ItemDto> LoadAllItems()
         {
             var output = new List<ItemDto>();
-            var itemsDir = GetDataDir(url, false);
+            var itemsDir = GetDataDir(false);
             if (!Directory.Exists(itemsDir))
             {
                 return output;
@@ -90,30 +83,28 @@ namespace CustomPLMDriver
                     output.Add(itemDto);
                     reader.Close();
                 }
-
-
             }
             return output;
         }
 
-        private void PopulateIdIfMissing(ObjectDto dto, string url, bool changes)
+        private void PopulateIdIfMissing(ObjectDto dto, bool changes)
         {
             var id = dto.Id;
 
-            if (String.IsNullOrEmpty(id.AlternateId))
+            if (string.IsNullOrEmpty(id.AlternateId))
             {
-                id.AlternateId = GenerateAlternateId(url, changes);
+                id.AlternateId = GenerateAlternateId(changes);
             }
 
-            if (String.IsNullOrEmpty(id.Id))
+            if (string.IsNullOrEmpty(id.Id))
             {
                 id.Id = Guid.NewGuid().ToString();
             }
         }
 
-        private String GenerateAlternateId(String url, bool changes)
+        private string GenerateAlternateId(bool changes)
         {
-            var itemsDir = GetDataDir(url, changes);
+            var itemsDir = GetDataDir(changes);
             CreateDirectory(itemsDir);
 
             var directoryInfo = new DirectoryInfo(itemsDir);
@@ -130,9 +121,9 @@ namespace CustomPLMDriver
             }
         }
 
-        private string GetTargetDir(IdDto id, String url, bool changes)
+        private string GetTargetDir(IdDto id, bool changes)
         {
-            var itemsDir = GetDataDir(url, changes);
+            var itemsDir = GetDataDir(changes);
             var dirName = ReplaceInvalidChars(id.AlternateId);
             var targetDir = Path.Combine(itemsDir, dirName);
             if (!Directory.Exists(targetDir))
@@ -142,9 +133,9 @@ namespace CustomPLMDriver
             return targetDir;
         }
 
-        private string FindFolderByPlmId(String plmId, String url, bool changes)
+        private string FindFolderByPlmId(string plmId, bool changes)
         {
-            var dataDir = GetDataDir(url, changes);
+            var dataDir = GetDataDir(changes);
             if (!Directory.Exists(dataDir))
             {
                 return null;
@@ -155,58 +146,43 @@ namespace CustomPLMDriver
             var files = directoryInfo.GetDirectories().ToList();
 
             var index = files.FindIndex(file => file.Name.StartsWith(dirNamePrefix));
-            if (index == -1)
-            {
-                return null;
-            }
-            else
-            {
-                return files[index].FullName;
-            }
+            return index == -1 ? null : files[index].FullName;
         }
 
-        private void CreateDirectory(string targetDir)
+        private static void CreateDirectory(string targetDir)
         {
             if (!Directory.Exists(targetDir))
             {
-                Directory.CreateDirectory(targetDir);
+                Directory.CreateDirectory(targetDir!);
             }
         }
 
-        private string GetDataDir(string url, bool changes)
+        private string GetDataDir(bool changes)
         {
-            return Path.Combine(GetRootDir(url), changes ? ChangesFolderName : ItemsFolderName);
-        }
-
-        private string GetRootDir(string url)
-        {
-            return url;
+            return Path.Combine(basePath, changes ? ChangesFolderName : ItemsFolderName);
         }
 
         private static string ReplaceInvalidChars(string fileName)
         {
-            return fileName.Replace("[^a-zA-Z0-9\\.\\-]", "_");
+            return fileName.Replace(@"[^a-zA-Z0-9\.\-]", "_");
         }
 
-        private void StoreAttachments(ObjectDto dto, string targetDir)
+        private static void StoreAttachments(ObjectDto dto, string targetDir)
         {
             var attachmentsPath = Path.Combine(targetDir, "attachments");
             foreach (var table in dto.RelationshipTables)
             {
                 var tableOutput = Path.Combine(attachmentsPath, table.Type);
-                foreach (var row in table.Rows)
+                foreach (var row in table.Rows.Where(row => !string.IsNullOrEmpty(row.SourceFile)))
                 {
-                    if (!string.IsNullOrEmpty(row.SourceFile))
-                    {
-                        row.FileResource = StoreAttachment(row.SourceFile, tableOutput);
-                    }
+                    row.FileResource = StoreAttachment(row.SourceFile, tableOutput);
                 }
             }
 
             CleanupTempAttachments();
         }
 
-        private string StoreAttachment(string sourceFile, string destinationDir)
+        private static string StoreAttachment(string sourceFile, string destinationDir)
         {
             Directory.CreateDirectory(destinationDir);
             var fileName = Path.GetFileName(sourceFile);
@@ -217,7 +193,7 @@ namespace CustomPLMDriver
             return filePath;
         }
 
-        private void CleanupTempAttachments()
+        private static void CleanupTempAttachments()
         {
             var tempDir = Path.Combine(Path.GetTempPath(), "fs-attachments");
 

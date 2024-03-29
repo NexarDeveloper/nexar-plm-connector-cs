@@ -1,8 +1,12 @@
+using CustomPLMService.Contract;
+using CustomPLMService.Contract.Models;
+using CustomPLMService.Contract.Models.Authentication;
+using CustomPLMService.Contract.Models.Metadata;
+using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
-using CustomPLMService.Contract;
-
-namespace CustomPLMDriver
+using System.Threading.Tasks;
+namespace FilesystemPLMDriver
 {
     public class FileSystemPlmMetadataService : ICustomPlmMetadataService
     {
@@ -11,30 +15,31 @@ namespace CustomPLMDriver
         private readonly IReadOnlyList<AttributeSpec> attributes;
         private readonly IReadOnlyList<RelationshipSpec> relationships;
 
-        public FileSystemPlmMetadataService(MetadataConfig config)
+        private readonly IContext userContext;
+
+        public FileSystemPlmMetadataService(IOptions<MetadataConfig> config, IContext userContext)
         {
-            typesIds = config.ItemTypes.Select(name => CreateTypeId(name, BaseType.Item)).ToList();
-            changeTypesIds = config.ChangeTypes.Select(name => CreateTypeId(name, BaseType.Change)).ToList();
-            attributes = config.AttributeNames.Select(CreatePlmAttributeSpec).ToList();
+            typesIds = config.Value.ItemTypes.Select(name => CreateTypeId(name, BaseType.Item)).ToList();
+            changeTypesIds = config.Value.ChangeTypes.Select(name => CreateTypeId(name, BaseType.Change)).ToList();
+            attributes = config.Value.AttributeNames.Select(CreatePlmAttributeSpec).ToList();
             relationships = CreatePlmRelationshipSpecs(attributes).ToList();
+
+            this.userContext = userContext;
         }
 
-        public IEnumerable<TypeId> ReadTypeIdentifiers(Context context, BaseType baseType)
+        public Task<IEnumerable<TypeId>> ReadTypeIdentifiers(BaseType baseType)
         {
-            switch (baseType)
+            return Task.FromResult(baseType switch
             {
-                case BaseType.Item:
-                    return typesIds;
-                case BaseType.Change:
-                    return changeTypesIds;
-                default:
-                    return Enumerable.Empty<TypeId>();
-            }
+                BaseType.Item => typesIds,
+                BaseType.Change => changeTypesIds,
+                _ => Enumerable.Empty<TypeId>()
+            });
         }
 
-        public IEnumerable<Type> ReadTypes(Context context, IEnumerable<TypeId> typeId)
+        public Task<IEnumerable<Type>> ReadTypes(IEnumerable<TypeId> typeId)
         {
-            return typeId.Select(id =>
+            return Task.FromResult(typeId.Select(id =>
             {
                 var plmType = new Type
                 {
@@ -44,7 +49,7 @@ namespace CustomPLMDriver
                 plmType.Attributes.AddRange(attributes);
                 plmType.Relationships.AddRange(relationships);
                 return plmType;
-            });
+            }));
         }
 
         private static TypeId CreateTypeId(string typeName, BaseType baseType)
@@ -69,7 +74,7 @@ namespace CustomPLMDriver
                 ReadOnly = false,
                 Required = false,
                 UomFamilyName = attributeName,
-                ListValues = new List<ListValue>(),
+                ListValues = [],
                 DataType = AttributeSpec.Datatype.Text,
                 ValuesetType = AttributeSpec.Valueset.Free
             };
