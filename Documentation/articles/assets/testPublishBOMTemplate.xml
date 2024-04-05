@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pt:DMPublishTemplate id="BasicPublishTemplate" version="1.0"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xmlns:pt="dm-publish-template"
+                      xmlns:cmn="dm-config-common"
+                      xsi:schemaLocation=" dm-publish-template dm-publish-template.xsd">
+
+    <pt:Declarations>
+        <pt:BomParent ref="project-parent"/>
+    </pt:Declarations>
+
+    <pt:PublishRules>
+        <pt:EntityRule id="project-parent">
+            <pt:Relationships>
+            </pt:Relationships>
+
+            <pt:FileDistributions>
+                <pt:FileDistribution>
+                    <pt:PathFilters>
+                        <pt:PathFilter>BOM/.*\.xml</pt:PathFilter>
+                    </pt:PathFilters>
+
+                    <pt:Attributes>
+                        <cmn:Attribute dataType="string">
+                            <cmn:Key>category</cmn:Key>
+                            <cmn:Value>Item Specification</cmn:Value>
+                        </cmn:Attribute>
+                    </pt:Attributes>
+
+                </pt:FileDistribution>
+            </pt:FileDistributions>
+        </pt:EntityRule>
+    </pt:PublishRules>
+
+</pt:DMPublishTemplate>

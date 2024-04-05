@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pt:DMPublishTemplate id="BasicPublishTemplate" version="1.0"
+                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xmlns:pt="dm-publish-template"
+                      xmlns:common="dm-config-common"
+                      xsi:schemaLocation="dm-publish-template dm-publish-template.xsd dm-config-common dm-config-common.xsd">
+
+    <pt:Declarations>
+        <pt:BomParent ref="project-parent"/>
+        <!-- Define how to approach component creation and linkage on PLM side (during publish) -->
+        <!-- LinkExistingOnly : link existing components, do not create non-existing components -->
+        <!-- CreateNewAndLink (default, if not specified) : create non existing components and link -->
+        <!-- LinkIfAllExists : do not create non existing components, link only if all components exists on PLM side -->
+        <pt:BomStrategy>CreateNewAndLink</pt:BomStrategy>
+    </pt:Declarations>
+
+    <pt:PublishRules>
+        <!-- Set of rules to process 'project' data -->
+        <pt:EntityRule id="project-parent">
+            <pt:Relationships/>
+            <pt:FileDistributions>
+
+                <!-- Define set of files to be pushed to PLM -->
+                <!-- All files identified by this FileDistribution section will be archived into single 'Sources.zip' file -->
+                <pt:FileDistribution archiveName="Sources.zip">
+                    <pt:PathFilters>
+                        <!-- Project itself does not have own 'archive' on Altium Server side - but it is possible to pull files from related items -->
+                        <!-- In this example files are taken from 'Sources' identified by publish-id -->
+                        <pt:PathFilter sourceId="Sources">Released/.*\.PcbDoc</pt:PathFilter>
+                        <pt:PathFilter sourceId="Sources">Released/.*\.SchDoc</pt:PathFilter>
+                        <pt:PathFilter sourceId="Sources">Released/.*\.OutJob</pt:PathFilter>
+                        <pt:PathFilter sourceId="Sources">Released/.*\.PrjPcb</pt:PathFilter>
+                    </pt:PathFilters>
+
+                    <!-- Set-up parameter for the file on PLM side -->
+                    <pt:Attributes>
+                        <common:Attribute>
+                            <common:Key>category</common:Key>
+                            <common:Value>Item Specification</common:Value>
+                        </common:Attribute>
+                    </pt:Attributes>
+                </pt:FileDistribution>
+
+            </pt:FileDistributions>
+        </pt:EntityRule>
+
+        <!-- Set of rules to process 'assembly' outputs -->
+        <!-- Create item for each of variants -->
+        <pt:EntityRule id="PCBA">
+            <pt:Relationships>
+                <pt:Relation type="parent" ref="project-parent"/>
+            </pt:Relationships>
+
+            <pt:FileDistributions>
+                <pt:FileDistribution archiveName="pcba.zip">
+                    <pt:PathFilters>
+                        <pt:PathFilter>.*\.(pdf|PDF)</pt:PathFilter>
+                    </pt:PathFilters>
+
+                    <pt:Attributes>
+                        <common:Attribute>
+                            <common:Key>category</common:Key>
+                            <common:Value>Item Specification</common:Value>
+                        </common:Attribute>
+                    </pt:Attributes>
+                </pt:FileDistribution>
+
+            </pt:FileDistributions>
+        </pt:EntityRule>
+    </pt:PublishRules>
+
+</pt:DMPublishTemplate>

@@ -30,7 +30,7 @@ namespace FilesystemPLMDriver
         {
             var changes = plmId.TypeId.BaseType.Equals(BaseType.Change);
             var itemDto = repository.Load(plmId.PublicId, changes);
-            return Task.FromResult(itemDto != null ? DtoConverter.ToPlmItem(itemDto) : null);
+            return Task.FromResult(itemDto is not null ? DtoConverter.ToPlmItem(itemDto) : null);
         }
 
         public Task<Item> UpdateItem(ItemUpdateSpec item)
@@ -51,11 +51,10 @@ namespace FilesystemPLMDriver
                 if (query.MaxRows > 0 && filtered.Count > query.MaxRows)
                     break;
                 var matches = true;
-                if (null != type)
+                if (type is not null)
                 {
                     if (!type.Id.Id.Equals(item.Id.Type))
                     {
-                        matches = false;
                         continue;
                     }
                 }

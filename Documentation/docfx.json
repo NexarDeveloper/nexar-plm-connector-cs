@@ -4,7 +4,6 @@
       "src": [
         {
           "files": [
-            "CustomPLMService/CustomPLMService.csproj",
             "CustomPLMService.Contract/CustomPLMService.Contract.csproj"
           ],
           "src": ".."
@@ -13,7 +12,8 @@
       "dest": "api",
       "disableGitFeatures": true,
       "disableDefaultFilter": false,
-      "filter": "filterConfig.yml"
+      "filter": "filterConfig.yml",
+      "namespaceLayout": "nested"
     }
   ],
   "build": {
@@ -22,7 +22,7 @@
       "_appLogoPath": "images/logo.svg",
       "_enableSearch": true,
       "_disableSideFilter": false,
-      "_disableContribution": false,
+      "_disableContribution": true,
       "_disableBreadcrumb": false
     },
     "content": [
@@ -44,7 +44,9 @@
     "resource": [
       {
         "files": [
-          "images/**"
+          "images/**",
+          "articles/images/**",
+          "articles/assets/**"
         ]
       }
     ],
@@ -61,7 +63,13 @@
     ],
     "dest": "_site",
     "globalMetadataFiles": [],
-    "fileMetadataFiles": [],
+    "fileMetadata": {
+      "_disableAffix": {
+        "articles/faq.md": true,
+        "articles/interface.md": true,
+        "articles/intro.md": true
+      }
+    },
     "template": [
       "statictoc"
     ],

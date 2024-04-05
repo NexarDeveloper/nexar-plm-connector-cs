@@ -1,5 +1,4 @@
 using CustomPLMService.Contract;
-using CustomPLMService.Contract.Models;
 using CustomPLMService.Contract.Models.Authentication;
 using CustomPLMService.Contract.Models.Metadata;
 using Microsoft.Extensions.Options;
