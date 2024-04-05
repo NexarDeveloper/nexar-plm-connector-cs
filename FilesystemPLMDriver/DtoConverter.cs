@@ -1,31 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CustomPLMService.Contract;
-using Type = CustomPLMService.Contract.Type;
+using CustomPLMService.Contract.Models.Items;
+using CustomPLMService.Contract.Models.Metadata;
+using CustomPLMService.Contract.Models.Relationship;
+using FilesystemPLMDriver.Models;
+using Type = CustomPLMService.Contract.Models.Metadata.Type;
 
-namespace CustomPLMDriver
+namespace FilesystemPLMDriver
 {
     internal static class DtoConverter
     {
         public static IdDto ToIdDto(this Id plmId, Type plmType)
         {
-            if (plmId == null)
+            return new IdDto
             {
-                return new IdDto
-                {
-                    Type = plmType.Id.Id
-                };
-            }
-            else
-            {
-                return new IdDto
-                {
-                    AlternateId = plmId.PublicId,
-                    Id = plmId.PrivateId,
-                    Type = plmId.TypeId.Id,
-                };
-            }
+                AlternateId = plmId?.PublicId,
+                Id = plmId?.PrivateId,
+                Type = plmId?.TypeId.Id ?? plmType.Id.Id,
+            };
         }
 
         public static Id ToPlmId(IdDto idDto, bool changeType)
@@ -100,7 +93,7 @@ namespace CustomPLMDriver
             {
                 Id = ToPlmId(itemDto.Id, !(itemDto is ItemDto))
             };
-            var attributes = itemDto.Attributes.Select(attribute => ToPlmAttributeValue(attribute)).ToList();
+            var attributes = itemDto.Attributes.Select(ToPlmAttributeValue).ToList();
             plmItem.Values.AddRange(attributes);
             return plmItem;
         }
@@ -109,16 +102,19 @@ namespace CustomPLMDriver
         {
             var plmAttributeValue = new AttributeValue
             {
-                AttributeId = attribute.Name
+                AttributeId = attribute.Name,
+                Value = new Value(attribute.Value)
             };
-            plmAttributeValue.Value = new Value(attribute.Value);
             return plmAttributeValue;
         }
 
         private static void PopulateAttributes(IEnumerable<AttributeValue> values, ObjectDto itemDto)
         {
             var attributes = values.Select(attribute => new AttributeValueDto
-                {Name = attribute.AttributeId, Value = attribute.Value});
+            {
+                Name = attribute.AttributeId,
+                Value = attribute.Value
+            });
             itemDto.Attributes.AddRange(attributes);
         }
 
@@ -140,7 +136,7 @@ namespace CustomPLMDriver
                 Type = ConvertRelationshipType(table.Type)
             };
 
-            var rows = table.Rows.Select(row => ToRelationshipDto(row)).ToList();
+            var rows = table.Rows.Select(ToRelationshipDto).ToList();
             relationshipTable.Rows.AddRange(rows);
 
             return relationshipTable;
@@ -163,7 +159,10 @@ namespace CustomPLMDriver
             }
 
             var attributes = relationship.Attributes.Select(attribute => new AttributeValueDto
-                {Name = attribute.AttributeId, Value = attribute.Value}).ToList();
+            {
+                Name = attribute.AttributeId,
+                Value = attribute.Value
+            }).ToList();
             dto.Attributes.AddRange(attributes);
 
             return dto;
@@ -171,19 +170,14 @@ namespace CustomPLMDriver
 
         private static string ConvertRelationshipType(RelationshipType type)
         {
-            switch (type)
+            return type switch
             {
-                case RelationshipType.Bom:
-                    return "BOM";
-                case RelationshipType.Attachments:
-                    return "ATTACHMENTS";
-                case RelationshipType.ManufacturerParts:
-                    return "MANUFACTURER_PARTS";
-                case RelationshipType.AffectedItems:
-                    return "AFFECTED_ITEMS";
-                default:
-                    throw new Exception("Unsupported relation type");
-            }
+                RelationshipType.Bom => "BOM",
+                RelationshipType.Attachments => "ATTACHMENTS",
+                RelationshipType.ManufacturerParts => "MANUFACTURER_PARTS",
+                RelationshipType.AffectedItems => "AFFECTED_ITEMS",
+                _ => throw new Exception("Unsupported relation type")
+            };
         }
     }
 }

@@ -33,8 +33,6 @@ enum BaseType {
     CHANGE = 1;
 }
 
-// TODO add real int value to the cRPC int32
-// TODO use grpc timestamp for the date
 message Value {
     oneof typed_value {
         string string_value = 1;

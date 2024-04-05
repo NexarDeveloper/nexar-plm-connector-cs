@@ -3,9 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using CustomPLMDriver;
-using CustomPLMService.Contract;
-using Type = CustomPLMService.Contract.Type;
+using CustomPLMService.Contract.Models.Items;
+using CustomPLMService.Contract.Models.Metadata;
+using CustomPLMService.Contract.Models.Search;
+using FilesystemPLMDriver;
+using Microsoft.Extensions.Options;
+using Moq;
+using System.Threading.Tasks;
+using CustomPLMService.Contract.Models.Authentication;
+using Microsoft.Extensions.Logging;
+using Type = CustomPLMService.Contract.Models.Metadata.Type;
 
 namespace CustomPLMService.Tests
 {
@@ -20,13 +27,25 @@ namespace CustomPLMService.Tests
             var metadataConfig = new MetadataConfig
             {
                 AttributeNames = Array.Empty<string>(),
-                ChangeTypes = new List<string> { "ECO" },
-                ItemTypes = new List<string> { "Capacitor", "Resistor" }
+                ChangeTypes = new List<string>
+                {
+                    "ECO"
+                },
+                ItemTypes = new List<string>
+                {
+                    "Capacitor",
+                    "Resistor"
+                }
             };
-
+            var metadataConfigMock = new Mock<IOptions<MetadataConfig>>();
+            metadataConfigMock.SetupGet(m => m.Value).Returns(metadataConfig);
+            
+            var userContextMock = new Mock<IContext>();
+            var loggerMock = new Mock<ILogger<FileSystemPlmService>>();
+            
             serviceDir = Path.Combine(Environment.CurrentDirectory, "testRepo");
-            service = new FileSystemPlmService(new ItemRepository(serviceDir));
-            metadataService = new FileSystemPlmMetadataService(metadataConfig);
+            service = new FileSystemPlmService(new ItemRepository(serviceDir), loggerMock.Object);
+            metadataService = new FileSystemPlmMetadataService(metadataConfigMock.Object, userContextMock.Object);
         }
 
         public void Dispose()
@@ -38,12 +57,9 @@ namespace CustomPLMService.Tests
         }
 
         [Fact]
-        public void ShouldCreateAndReadItem()
+        public async Task ShouldCreateAndReadItem()
         {
-            TypeId capacitorId;
-            Type capacitor;
-            Item created;
-            CreateCapacitor(out capacitorId, out capacitor, out created);
+            var (capacitorId, capacitor, created) = await CreateCapacitor();
 
             Assert.NotNull(created.Id);
             Assert.Equal(capacitorId, created.Id.TypeId);
@@ -63,14 +79,14 @@ namespace CustomPLMService.Tests
             updateSpec.Values.Add(StringAttribute("name", "nameValue"));
             updateSpec.Values.Add(StringAttribute("description", "descriptionUpdated"));
 
-            var updated = service.UpdateItem(null, updateSpec);
+            var updated = await service.UpdateItem(updateSpec);
             Assert.Equal(created.Id, updated.Id);
             Assert.Equal(2, updated.Values.Count);
             Assert.Equal("nameValue", StringAttribute(updated, "name"));
             Assert.Equal("descriptionUpdated", StringAttribute(updated, "description"));
 
             // read item
-            var item = service.ReadItem(null, created.Id);
+            var item = await service.ReadItem(created.Id);
             Assert.Equal(created.Id, item.Id);
             Assert.Equal(2, item.Values.Count);
             Assert.Equal("nameValue", StringAttribute(item, "name"));
@@ -78,7 +94,7 @@ namespace CustomPLMService.Tests
         }
 
         [Fact]
-        public void ShouldCreateAndReadChange()
+        public async Task ShouldCreateAndReadChange()
         {
             var ecoId = new TypeId
             {
@@ -87,14 +103,14 @@ namespace CustomPLMService.Tests
                 Id = "ECO",
                 BaseType = BaseType.Change
             };
-            var eco = metadataService.ReadTypes(null, SingletonList(ecoId)).First();
+            var eco = (await metadataService.ReadTypes(SingletonList(ecoId))).First();
             var createSpec = new ItemCreateSpec
             {
                 Metadata = eco,
             };
             createSpec.Values.Add(StringAttribute("name", "nameValue"));
             createSpec.Values.Add(StringAttribute("description", "descriptionValue"));
-            var created = service.CreateItem(null, createSpec);
+            var created = await service.CreateItem(createSpec);
             Assert.NotNull(created.Id);
             Assert.Equal(ecoId, created.Id.TypeId);
             Assert.NotNull(created.Id.PrivateId);
@@ -113,40 +129,45 @@ namespace CustomPLMService.Tests
             updateSpec.Values.Add(StringAttribute("name", "nameValue"));
             updateSpec.Values.Add(StringAttribute("description", "descriptionUpdated"));
 
-            var updated = service.UpdateItem(null, updateSpec);
+            var updated = await service.UpdateItem(updateSpec);
             Assert.Equal(created.Id, updated.Id);
             Assert.Equal(2, updated.Values.Count);
             Assert.Equal("nameValue", StringAttribute(updated, "name"));
             Assert.Equal("descriptionUpdated", StringAttribute(updated, "description"));
 
             // read item
-            var item = service.ReadItem(null, created.Id);
+            var item = await service.ReadItem(created.Id);
             Assert.Equal(created.Id, item.Id);
             Assert.Equal(2, item.Values.Count);
             Assert.Equal("nameValue", StringAttribute(item, "name"));
             Assert.Equal("descriptionUpdated", StringAttribute(item, "description"));
         }
 
-        private void CreateCapacitor(out TypeId capacitorId, out Type capacitor, out Item created)
+        private async Task<(TypeId capacitorId, Type capacitor, Item created)> CreateCapacitor()
         {
-            capacitorId = new TypeId
+            var capacitorId = new TypeId
             {
                 ApiName = "Capacitor",
                 Name = "Capacitor",
                 Id = "Capacitor"
             };
-            capacitor = metadataService.ReadTypes(null, new List<TypeId> {capacitorId}).First();
+            var capacitor = (await metadataService.ReadTypes(new List<TypeId>
+            {
+                capacitorId
+            })).First();
             var createSpec = new ItemCreateSpec
             {
                 Metadata = capacitor,
             };
             createSpec.Values.Add(StringAttribute("name", "nameValue"));
             createSpec.Values.Add(StringAttribute("description", "descriptionValue"));
-            created = service.CreateItem(null, createSpec);
+            var created = await service.CreateItem(createSpec);
+
+            return (capacitorId, capacitor, created);
         }
 
         [Fact]
-        public void ShouldReturnNullForNotExistingItem()
+        public async Task ShouldReturnNullForNotExistingItem()
         {
             var plmId = new Id
             {
@@ -158,13 +179,13 @@ namespace CustomPLMService.Tests
                     Id = "Capacitor"
                 }
             };
-            var result = service.ReadItem(null, plmId);
+            var result = await service.ReadItem(plmId);
 
             Assert.Null(result);
         }
 
         [Fact]
-        public void ShouldFindAllMatchingItems()
+        public async Task ShouldFindAllMatchingItems()
         {
             const int count = 5;
             var capacitorId = new TypeId
@@ -180,8 +201,8 @@ namespace CustomPLMService.Tests
                 Name = "Resistor",
                 Id = "Resistor"
             };
-            var capacitor = metadataService.ReadTypes(null, SingletonList(capacitorId)).First();
-            var resistor = metadataService.ReadTypes(null, SingletonList(resistorId)).First();
+            var capacitor = (await metadataService.ReadTypes(SingletonList(capacitorId))).First();
+            var resistor = (await metadataService.ReadTypes(SingletonList(resistorId))).First();
 
             for (var i = 0; i < count; i++)
             {
@@ -190,43 +211,57 @@ namespace CustomPLMService.Tests
                     Metadata = capacitor,
                 };
                 matchingSpec.Values.Add(StringAttribute("x", "y"));
-                service.CreateItem(null, matchingSpec);
+                await service.CreateItem(matchingSpec);
             }
 
             var wrongTypeSpec = new ItemCreateSpec
             {
                 Metadata = resistor,
             };
-            service.CreateItem(null, wrongTypeSpec);
+            await service.CreateItem(wrongTypeSpec);
 
             var wrongAttributeSpec = new ItemCreateSpec
             {
                 Metadata = capacitor,
             };
             wrongAttributeSpec.Values.Add(StringAttribute("x", "z"));
-            service.CreateItem(null, wrongAttributeSpec);
+            await service.CreateItem(wrongAttributeSpec);
 
-            var q = new Query {Type = "Capacitor"};
-            var att = new QueryAttribute {Name = "x", Value = "y"};
+            var q = new Query
+            {
+                Type = "Capacitor"
+            };
+            var att = new QueryAttribute
+            {
+                Name = "x",
+                Value = "y"
+            };
             q.Attrs.Add(att);
-            var found = service.QueryItems(null, q, capacitor);
+            var found = await service.QueryItems(q, capacitor);
             Assert.True(count == found.Count());
         }
 
         private static AttributeValue StringAttribute(string name, string value)
         {
-            var attribute = new AttributeValue {AttributeId = name, Value = new Value(value)};
+            var attribute = new AttributeValue
+            {
+                AttributeId = name,
+                Value = new Value(value)
+            };
             return attribute;
         }
 
         private static string StringAttribute(Item item, string name)
         {
-            return item.Values.AsEnumerable().First(attribute => attribute.AttributeId == name).Value;
+            return item.Values.First(attribute => attribute.AttributeId == name).Value;
         }
 
         private static IList<T> SingletonList<T>(T item)
         {
-            return new List<T> {item};
+            return new List<T>
+            {
+                item
+            };
         }
     }
 }

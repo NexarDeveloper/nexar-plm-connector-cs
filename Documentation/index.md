@@ -6,7 +6,7 @@ the unsupported PLM system.
 
 Generic Connector is distributed as a [C#](https://github.com/NexarDeveloper/nexar-plm-connector-cs) service application, 
 associated documentation, and example configuration files. Generic Connector framework comes 
-with two working examples of integration with Arena PLM and a simple file system storage - 
+with a working example of integration using a simple file system storage - 
 something that can be deployed and connected to the Altium ecosystem - a great starting point 
 for a custom implementation.
 

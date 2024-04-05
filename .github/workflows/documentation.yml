@@ -9,26 +9,33 @@ on:
 env:
   DOCUMENTATION_ROOT: Documentation/_site
 
+permissions:
+  actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
     name: Generate the docs
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: nunit/docfx-action@v2.4.0
-      name: Build Documentation
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Dotnet Setup
+      uses: actions/setup-dotnet@v4
       with:
-        args: Documentation/docfx.json
-
-    # See the following for detail on "Fix permissions" 
-    # https://github.com/actions/upload-pages-artifact?tab=readme-ov-file
-    - name: Fix permissions
-      run: |
-        chmod -c -R +rX "${{ env.DOCUMENTATION_ROOT }}/" | while read line; do
-          echo "::warning title=Invalid file permissions automatically fixed::$line"
-        done
+        dotnet-version: 8.x
+    
+    - run: |
+        dotnet tool update -g docfx
+        docfx Documentation/docfx.json
+      
     - name: Upload Pages artifact
-      uses: actions/upload-pages-artifact@v2
+      uses: actions/upload-pages-artifact@v3
       with:
         path: ${{ env.DOCUMENTATION_ROOT }}
 
@@ -54,4 +61,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v3
+        uses: actions/deploy-pages@v4

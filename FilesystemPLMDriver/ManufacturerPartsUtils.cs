@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using CustomPLMService.Contract;
-
-namespace CustomPLMDriver
+using CustomPLMService.Contract.Models.Items;
+using CustomPLMService.Contract.Models.Relationship;
+namespace FilesystemPLMDriver
 {
     internal static class ManufacturerPartsUtils
     {
@@ -26,10 +26,9 @@ namespace CustomPLMDriver
 
             var attribute = new AttributeValue
             {
-                AttributeId = "ManufacturerName"
+                AttributeId = "ManufacturerName",
+                Value = value
             };
-
-            attribute.Value = value;
 
             var childId = new Id
             {

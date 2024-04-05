@@ -1,4 +1,10 @@
+using AutoMapper;
+using CustomPLMService.Contract.Models.Authentication;
+using CustomPLMService.Contract.Models.Items;
+using Google.Protobuf;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xunit;
+using Assert = Xunit.Assert;
 using BaseTypeTO = Altium.PLM.Custom.BaseType;
 using IdTO = Altium.PLM.Custom.Id;
 using ItemTO = Altium.PLM.Custom.Item;
@@ -7,31 +13,30 @@ using AttributeValueTO = Altium.PLM.Custom.AttributeValue;
 using ValueTO = Altium.PLM.Custom.Value;
 using UomValueTO = Altium.PLM.Custom.UomValue;
 using ListValueTO = Altium.PLM.Custom.ListValue;
-using OparationTo = Altium.PLM.Custom.OperationSupportedRequest.Types.Operation;
+using OperationTo = Altium.PLM.Custom.OperationSupportedRequest.Types.Operation;
+using FileResourceTO = Altium.PLM.Custom.FileResource;
 
 namespace CustomPLMService.Tests
 {
     public class MappingTest
     {
-        private static bool initialized = false;
+        private readonly IMapper mapper;
 
         public MappingTest()
         {
-            if (!initialized)
-            {
-                Converter.Init();
-                initialized = true;
-            }
+            var mappingProfile = new PlmServiceMappingProfile();
+            var configuration = new MapperConfiguration(cfg => cfg.AddProfile(mappingProfile));
+            mapper = new Mapper(configuration);
         }
 
         [Fact]
         public void SupportedOperationTest()
         {
-            var changeOrderOperation = Converter.Map<Contract.SupportedOperation>(OparationTo.CreateChangeOrder);
-            Assert.Equal(Contract.SupportedOperation.CreateChangeOrder, changeOrderOperation);
+            var changeOrderOperation = mapper.Map<SupportedOperation>(OperationTo.CreateChangeOrder);
+            Assert.Equal(SupportedOperation.CreateChangeOrder, changeOrderOperation);
 
-            var partChoicesFromAttributesOperation = Converter.Map<Contract.SupportedOperation>(OparationTo.ExtractPartChoicesFromAttributes);
-            Assert.Equal(Contract.SupportedOperation.ExtractPartChoicesFromAttributes, partChoicesFromAttributesOperation);
+            var partChoicesFromAttributesOperation = mapper.Map<SupportedOperation>(OperationTo.ExtractPartChoicesFromAttributes);
+            Assert.Equal(SupportedOperation.ExtractPartChoicesFromAttributes, partChoicesFromAttributesOperation);
         }
 
         [Fact]
@@ -43,7 +48,12 @@ namespace CustomPLMService.Tests
                 {
                     PublicId = "PublicId",
                     PrivateId = "PrivateId",
-                    TypeId = new TypeIdTO { Id = "TypeId", ApiName = "TypeApiName", BaseType = BaseTypeTO.Item }
+                    TypeId = new TypeIdTO
+                    {
+                        Id = "TypeId",
+                        ApiName = "TypeApiName",
+                        BaseType = BaseTypeTO.Item
+                    }
                 }
             };
 
@@ -163,9 +173,9 @@ namespace CustomPLMService.Tests
             });
             grpcItem.Values.Add(listValueAttribute);
 
-            var item = Converter.Map<ItemTO>(grpcItem);
+            var item = mapper.Map<ItemTO>(grpcItem);
 
-            var backToGrpc = Converter.Map<ItemTO>(item);
+            var backToGrpc = mapper.Map<ItemTO>(item);
             Assert.Equal(grpcItem, backToGrpc);
 
             Assert.Equal(grpcItem.Id.PrivateId, item.Id.PrivateId);
@@ -174,6 +184,33 @@ namespace CustomPLMService.Tests
             Assert.Equal(grpcItem.Id.TypeId.Name, item.Id.TypeId.Name);
             Assert.Equal(grpcItem.Id.TypeId.ApiName, item.Id.TypeId.ApiName);
             Assert.Equal(grpcItem.Id.TypeId.BaseType.ToString(), item.Id.TypeId.BaseType.ToString());
+        }
+
+        [Fact]
+        public void FileRequestMappingTest()
+        {
+            // Arrange
+            const string fileName = "testFileName";
+            var data = new byte[]
+            {
+                1, 2, 3
+            };
+
+            var fileResource = new FileResourceTO()
+            {
+                FileName = fileName,
+                Data = ByteString.CopyFrom(data)
+            };
+
+            // Act
+            var mappedFileResource = mapper.Map<FileResource>(fileResource);
+
+            // Assert
+            Assert.NotNull(mappedFileResource);
+            Assert.Equal(fileName, mappedFileResource.FileName);
+            Assert.Equal(data.Length, mappedFileResource.Data.Length);
+
+            CollectionAssert.AreEqual(data, mappedFileResource.Data.ToArray());
         }
     }
 }
