@@ -75,6 +75,13 @@
     ],
     "postProcessors": [],
     "markdownEngineName": "markdig",
+    "markdownEngineProperties": {
+      "plantUml": {
+        "outputFormat": "svg",
+        "remoteUrl": "https://www.plantuml.com/plantuml/",
+        "renderingMode": "remote"
+      }
+    },
     "noLangKeyword": false,
     "keepFileLink": false,
     "cleanupCacheHistory": false,
