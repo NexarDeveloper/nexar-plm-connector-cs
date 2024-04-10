@@ -3,9 +3,9 @@ using CustomPLMService.Contract.Models.Authentication;
 using CustomPLMService.Contract.Models.Items;
 using CustomPLMService.Contract.Models.Metadata;
 using CustomPLMService.Contract.Models.Relationship;
-using CustomPLMService.Contract.Models.Search;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CustomPLMService.Contract.Models.Query;
 
 namespace CustomPLMService.Contract
 {

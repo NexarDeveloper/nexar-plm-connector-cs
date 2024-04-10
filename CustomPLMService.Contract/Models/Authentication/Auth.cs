@@ -21,7 +21,7 @@ public class Auth
     /// </summary>
     public Credentials Credentials { get; set; }
 
-    public List<string> Licenses { get; set; } = new List<string>();
+    public List<string> Licenses { get; set; } = [];
 
     public string Context { get; set; }
 }

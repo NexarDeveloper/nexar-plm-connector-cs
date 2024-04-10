@@ -5,12 +5,12 @@ using System.Linq;
 using System.IO;
 using CustomPLMService.Contract.Models.Items;
 using CustomPLMService.Contract.Models.Metadata;
-using CustomPLMService.Contract.Models.Search;
 using FilesystemPLMDriver;
 using Microsoft.Extensions.Options;
 using Moq;
 using System.Threading.Tasks;
 using CustomPLMService.Contract.Models.Authentication;
+using CustomPLMService.Contract.Models.Query;
 using Microsoft.Extensions.Logging;
 using Type = CustomPLMService.Contract.Models.Metadata.Type;
 

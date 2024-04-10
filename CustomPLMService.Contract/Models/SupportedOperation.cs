@@ -1,4 +1,4 @@
-﻿namespace CustomPLMService.Contract.Models.Authentication;
+﻿namespace CustomPLMService.Contract.Models;
 
 /// <summary>
 /// Enumerates supported special operations in external systems.

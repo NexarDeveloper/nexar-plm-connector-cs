@@ -1,4 +1,4 @@
-﻿namespace CustomPLMService.Contract.Models.Search;
+﻿namespace CustomPLMService.Contract.Models.Query;
 
 /// <summary>
 /// Represents query attribute in external system.

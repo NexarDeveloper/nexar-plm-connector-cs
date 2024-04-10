@@ -1,16 +1,16 @@
-﻿# Operation flows
-To illustrate the relationship between **Nexar Generic PLM Connector** endpoints, and the overall flow of the basic operations, 
-this section will present the simplified flow of operations available via the generic connector API. These flows omit more complicated
-scenarios, but unless your *IsOperationSupported()* method returns true for those queries, A365 won't start those operations and will limit
-to operations presented in these flows.
+﻿# Operational Flows
+To illustrate the relationship between **Nexar Generic PLM Connector** endpoints and the overall flow of the basic operations, 
+this section presents the simplified flow of operations available using the Generic Connector API. It excludes more complicated
+scenarios, but unless your *IsOperationSupported()* method returns true for those queries, Altium 365 will not start those 
+operations and will be limited to the operations presented in the following section.
 
-## Sync operation
+## Sync Operation
 ### To PLM
-Sync to PLM starts with verifying Auth data. If the generic connector accepts the Auth data, 
-the Sync process starts. First, it reads all the metadata types. Then, based on connector configuration, A365 will query
-its internal data store to select items that need syncing. When the list of components that need to be synced to PLM is ready, 
-process will start fetching the items from PLM (based on the configured key). If the item doesn't exist on PLM, it will be created.
-In other case, updated. This is illustrated on the following diagram:
+Sync to PLM starts with verifying *Auth* data. If the Generic Connector accepts the *Auth* data, 
+the Sync process begins. First, it reads all the metadata types. Then, based on connector configuration, Altium 365 will query
+its internal data store to select items that need to be synced. When the list of components that need to be synced to PLM is ready, 
+the process will start fetching the items from PLM (based on the configured key). If the item does not exist on PLM, it will be created.
+If it does exist, it will be updated. This is illustrated in the following diagram:
 
 ```plantuml
 title Sync To PLM
@@ -49,10 +49,10 @@ Participant "Generic Connector" as Connector
 ```
 
 ### To Altium
-Sync to PLM starts with verifying Auth data. If the generic connector accepts the Auth data,
-the Sync process starts. First, it reads all the metadata types. Then, based on connector configuration, A365 will query
-PLM for list of item ids that need syncing. For each of these ids, process will fetch the items from PLM 
-(based on the configuration) and store them on Altium side. This is illustrated on the following diagram:
+Sync to PLM starts with verifying *Auth* data. If the Generic Connector accepts the *Auth* data,
+the Sync process begins. First, it reads all the metadata types. Then, based on connector configuration, Altium 365 will query
+PLM for a list of item IDs that need to be synced. For each of these IDs, the process will fetch the items from PLM 
+(based on the configuration) and store them on the Altium side. This is illustrated in the following diagram:
 
 ```plantuml
 title Sync To Altium
@@ -90,13 +90,46 @@ Participant "Generic Connector" as Connector
     end
 ```
 
-### Parts Choice
-   TBD
+### Part Choices
+#### To PLM
+The *Part Choice* operation is run at the end of the Sync Operation. It consists of reading items from the PLM side and then
+running *CreateItems* or *UpdateItems* operations. What is worth noticing is the format in which Part Choices are provided.
+For every *Part Choice* entry, **Manufacturer Name** and **Manufacturer Part Number** attributes configured in **Attribute Definition** 
+configuration row will contain the *Part Choice* data. 
+
+Number of *Part Choices* that can be passed, is determined by the number of **Attribute Definition** rows in the configuration.
+If only three rows are added to the **PLM Integration** config, up to three *Part Choices* will be provided 
+(each occupying parameters from a single row of the configuration). Any additional Part Choice will be ignored.
+
+```plantuml
+title Sync To Altium
+skinparam sequenceMessageAlign center
+skinparam ParticipantPadding 100
+
+Participant "Altium 365" as Altium
+Participant "Generic Connector" as Connector
+
+    ==End of Sync Operation==
+    |||
+    Altium -> Connector: ReadItems()
+        activate Connector
+    Connector --> Altium: <<Item[]>>
+        deactivate Connector
+    
+    loop for all chunks with items
+        Altium -> Connector: CreateItems() || UpdateItems()
+            activate Connector
+        Connector --> Altium: <<Item[]>>
+            deactivate Connector
+    end
+```
+
+
 ## Publish BOM
-Publish BOM operation starts with verifying Auth data. If the generic connector accepts the Auth data,
-the Sync process starts. First, it reads all the metadata types. It will then read from PLM all items that are present
-in the BOM. Based on the response, it will create missing items (like project file, components that weren't returned by ReadItems etc.)
-and request creation of BOM type relationship between the project and the items. This is illustrated on the following diagram:
+Publishing BOM starts with verifying *Auth* data. If the Generic Connector accepts the *Auth* data,
+the Sync process begins. First, it reads all the metadata types. It will then read from PLM all items that are present
+in the BOM. Based on the response, it will create missing items (such as project file, components that were not returned by ReadItems, etc,)
+and request creation of a BOM type relationship between the project and the items. This is illustrated in the following diagram:
 
 ```plantuml
 title Publish BOM
@@ -138,14 +171,14 @@ Participant "Generic Connector" as Connector
 ```
 
 ## Publish Project
-Publish BOM operation starts with verifying Auth data. If the generic connector accepts the Auth data,
-the Sync process starts. First, it reads all the metadata types. Then, A365 lists all components that exist in the project
-and tries to read them from the Generic Connector side. Worth noticing that the project itself is also threaded as an item. 
-Based on result, it will either create or update items. When the sync part finishes, A365 will start uploading the relationship
-information. To do so, when needed, it will upload a file (attachment) and later run *CreateRelationships* command that will
-refer to the uploaded file. Example of such files could be *.pcba assembly files. The number and type of those files depends on the publish
-template configuration. When the *CreateRelationships* operation is ended, the basic publish operation is over. If *PropagateChangeOrderToNextStep*
-would be configured on A365 and CustomPLMService would support operations such as *CreateChangeOrder*, *AdvanceWorkflowState* operation would also be started.
+Project Publishing starts with verifying *Auth* data. If the Generic Connector accepts the *Auth* data,
+the Sync process begins. First, it reads all the metadata types. Then, Altium 365 lists all components that exist in the project
+and tries to read them from the Generic Connector side. It is worth mentioning that the project itself is also threaded as an item. 
+Based on the result, it will either create or update items. When the sync finishes, Altium 365 will start uploading the relationship
+information. To do so, when needed, it will upload a file as an attachment and later run the *CreateRelationships* command that will
+refer to the uploaded file. An example of such files is *.pcba assembly file. The number and type of the files depends on the publish
+template configuration. When the *CreateRelationships* operation finishes, the basic publish operation is over. If *PropagateChangeOrderToNextStep*
+would be configured on Altium 365 and CustomPLMService supported operations such as *CreateChangeOrder*, the *AdvanceWorkflowState* operation would also begin.
 
 ```plantuml
 title Publish Project
