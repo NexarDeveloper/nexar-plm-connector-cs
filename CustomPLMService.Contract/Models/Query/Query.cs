@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-namespace CustomPLMService.Contract.Models.Search;
+namespace CustomPLMService.Contract.Models.Query;
 
 /// <summary>
 /// Represents query in external system.

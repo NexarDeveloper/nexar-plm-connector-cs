@@ -1,14 +1,6 @@
 ﻿using System;
 namespace CustomPLMService.Contract.Models.Authentication;
 
-public interface IContext
-{
-    string Token { get; }
-    Credentials Credentials { get; }
-    bool Initialized { get; }
-    void FromAuth(Auth auth);
-}
-
 /// <summary>
 /// Provides context for authentication in external system.
 /// </summary>
