@@ -1,6 +1,6 @@
-# Nexar Generic PLM Connector
+# Altium 365 Generic PLM Connector
 
-Nexar Generic PLM Connector (referred to as Generic Connector) framework exposes gRPC endpoints used 
+Altium 365 Generic PLM Connector (referred to as Generic Connector) framework exposes gRPC endpoints used 
 by Altium 365 to communicate with arbitrary PLM instances. It can be used to provide integration with the unsupported PLM systems. 
 
 It works as a man-in-the-middle between Altium 356 and custom PLM system, taking the role of an adapter. It is responsible
