@@ -2,5 +2,5 @@
 #[gRPC Interface](interface.md)
 #[Solution Description](solution.md)
 #[Operations Flow](operations-flow.md)
-#[Testing with A365](testing.md)
+#[Testing with Altium 365](testing.md)
 #[FAQ](faq.md)
