@@ -1,7 +1,7 @@
 ﻿# Solution Description
 
 ## 1000-foot view
-The solution in this repository consists of two main parts. One, is the base implementation of the gRPC service needed by the *Nexar Generic PLM Connector* to start 
+The solution in this repository consists of two main parts. One, is the base implementation of the gRPC service needed by the *Altium 365 Generic PLM Connector* to start 
 the connection between Altium 365 and the Generic Connector. The second is an example implementation of a file-based PLM system that can act as a point of reference. 
 It requires .NET 8.0 SDK to be installed on the system which can be downloaded from [Microsoft .NET download page](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) 
 
