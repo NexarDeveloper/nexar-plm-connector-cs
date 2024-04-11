@@ -1,3 +1,3 @@
-# API Documentation for Nexar Generic PLM Connector
+# API Documentation for Altium 365 Generic PLM Connector
 
-This is the API reference documentation for **Nexar Generic PLM Connector**.
+This is the API reference documentation for **Altium 365 Generic PLM Connector**.
