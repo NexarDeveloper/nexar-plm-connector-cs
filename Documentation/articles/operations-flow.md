@@ -1,5 +1,5 @@
 ﻿# Operational Flows
-To illustrate the relationship between **Nexar Generic PLM Connector** endpoints and the overall flow of the basic operations, 
+To illustrate the relationship between **Altium 365 Generic PLM Connector** endpoints and the overall flow of the basic operations, 
 this section presents the simplified flow of operations available using the Generic Connector API. It excludes more complicated
 scenarios, but unless your *IsOperationSupported()* method returns true for those queries, Altium 365 will not start those 
 operations and will be limited to the operations presented in the following section.
