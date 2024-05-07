@@ -65,64 +65,64 @@ namespace CustomPLMService.Contract
         Task<bool> TestAccess(Auth auth);
 
         /// <summary>
-        /// <para>Creates an item in an external system based on <paramref name="item"/></para>
+        /// <para>Creates items in an external system based on <paramref name="items"/></para>
         /// <para>If a specified identifier is not used, it will be generated</para>
         /// </summary>
-        /// <param name="context">Immutable operation context</param>
-        /// <param name="item">Item creation specification</param>
-        /// <returns>Created item</returns>
+        /// <param name="items">Items creation specification</param>
+        /// <returns>List of created items</returns>
         /// <seealso cref="BaseType"/>
-        Task<Item> CreateItem(ItemCreateSpec item);
+        Task<IEnumerable<Item>> CreateItems(IEnumerable<ItemCreateSpec> items);
+        
         /// <summary>
-        /// Reads an item with specified <paramref name="plmId"/> from an external system
+        /// Reads items with specified <paramref name="plmIds"/> from an external system
         /// </summary>
-        /// <param name="context">Immutable operation context</param>
-        /// <param name="plmId">Item identifier</param>
-        /// <returns>Found item if it exists, otherwise null</returns>
-        Task<Item> ReadItem(Id plmId);
+        /// <param name="plmIds">Item identifiers</param>
+        /// <returns>List of found items if it exists, otherwise null</returns>
+        Task<IEnumerable<Item>> ReadItems(IEnumerable<Id> plmIds);
+        
         /// <summary>
-        /// Updates an item in an external system based on <paramref name="updateSpec"/>
+        /// Updates items in an external system based on <paramref name="updateSpecs"/>
         /// </summary>
-        /// <param name="context">Immutable operation context</param>
-        /// <param name="updateSpec">Item update specification</param>
-        /// <returns>Updated item</returns>
+        /// <param name="updateSpecs">List of item update specifications</param>
+        /// <returns>List of updated items</returns>
         /// <seealso cref="BaseType"/>
-        Task<Item> UpdateItem(ItemUpdateSpec updateSpec);
+        Task<IEnumerable<Item>> UpdateItems(IEnumerable<ItemUpdateSpec> updateSpecs);
+        
         /// <summary>
-        /// Deletes from an external system an item with specified <paramref name="id"/>
+        /// Deletes from an external system items with specified <paramref name="ids"/>
         /// </summary>
-        /// <param name="context">Immutable operation context</param>
-        /// <param name="id">Item identifier</param>
-        Task DeleteItem(Id id);
+        /// <param name="ids">List of item identifier</param>
+        Task DeleteItems(IEnumerable<Id> ids);
+        
         /// <summary>
         /// Finds items identifiers with <paramref name="type"/> which meet specified <paramref name="query"/>
         /// </summary>
-        /// <param name="context">Immutable operation context</param>
         /// <param name="query">Query criteria to be meet</param>
         /// <param name="type">Item type</param>
         /// <returns>List of found items identifiers</returns>
         Task<IEnumerable<Id>> QueryItems(Query query, Type type);
+        
         /// <summary>
         /// Creates relationships between items from <paramref name="tables"/>
         /// </summary>
-        /// <param name="context">Immutable operation context</param>
         /// <param name="tables">List of relationship tables to be created</param>
         /// <seealso cref="RelationshipType"/>
         Task CreateRelationships(IEnumerable<RelationshipTable> tables);
+        
         /// <summary>
-        /// Reads relationships between items with the specified table <paramref name="id"/> and <paramref name="type"/>
+        /// Reads relationships between items with the specified table <paramref name="ids"/> and <paramref name="type"/>
         /// </summary>
-        /// <param name="context">Immutable operation context</param>
-        /// <param name="id">Relationship table identifier</param>
+        /// <param name="ids">List of relationship table identifiers</param>
         /// <param name="type">Relationship's type</param>
         /// <returns>Table with found relationships</returns>
-        Task<RelationshipTable> ReadRelationship(Id id, RelationshipType type);
+        Task<IEnumerable<RelationshipTable>> ReadRelationships(IEnumerable<Id> ids, RelationshipType type);
+        
         /// <summary>
         /// Increases item's lifecycle state to the next default state
         /// </summary>
-        /// <param name="context">Immutable operation context</param>
         /// <param name="id">Item identifier</param>
         Task AdvanceState(Id id);
+        
         /// <summary>
         /// Checks if an external system supports given <paramref name="operationType"/>
         /// </summary>

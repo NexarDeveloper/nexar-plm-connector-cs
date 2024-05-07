@@ -16,31 +16,65 @@ using Type = CustomPLMService.Contract.Models.Metadata.Type;
 
 namespace FilesystemPLMDriver
 {
-    public class FileSystemPlmService(ItemRepository repository, ILogger<FileSystemPlmService> logger) : ICustomPlmService
+    public class FileSystemPlmService(ItemRepository repository, ILogger<FileSystemPlmService> logger)
+        : ICustomPlmService
     {
-        public Task<Item> CreateItem(ItemCreateSpec item)
+        public Task<IEnumerable<Item>> CreateItems(IEnumerable<ItemCreateSpec> items)
         {
-            var changes = item.Metadata.Id.BaseType.Equals(BaseType.Change);
-            var dto = changes ? DtoConverter.ToObjectDto(item) : DtoConverter.ToItemDto(item);
+            var result = new List<Item>();
+            foreach (var item in items)
+            {
+                var changes = item.Metadata.Id.BaseType.Equals(BaseType.Change);
+                var dto = changes ? DtoConverter.ToObjectDto(item) : DtoConverter.ToItemDto(item);
 
-            repository.Store(dto);
-            return Task.FromResult(DtoConverter.ToPlmItem(dto));
+                repository.Store(dto);
+                result.Add(DtoConverter.ToPlmItem(dto));
+            }
+
+            return Task.FromResult((IEnumerable<Item>)result);
         }
 
-        public Task<Item> ReadItem(Id plmId)
+        public Task<IEnumerable<Item>> ReadItems(IEnumerable<Id> plmIds)
         {
-            var changes = plmId.TypeId.BaseType.Equals(BaseType.Change);
-            var itemDto = repository.Load(plmId.PublicId, changes);
-            return Task.FromResult(itemDto is not null ? DtoConverter.ToPlmItem(itemDto) : null);
+            var result = new List<Item>();
+            foreach (var plmId in plmIds)
+            {
+                var changes = plmId.TypeId.BaseType.Equals(BaseType.Change);
+                var itemDto = repository.Load(plmId.PublicId, changes);
+                if (itemDto is not null)
+                {
+                    result.Add(DtoConverter.ToPlmItem(itemDto));
+                }
+            }
+
+            return Task.FromResult((IEnumerable<Item>)result);
         }
 
-        public Task<Item> UpdateItem(ItemUpdateSpec item)
+        public Task<IEnumerable<Item>> UpdateItems(IEnumerable<ItemUpdateSpec> updateSpecs)
         {
-            var changes = item.Metadata.Id.BaseType.Equals(BaseType.Change);
-            var dto = changes ? DtoConverter.ToObjectDto(item) : DtoConverter.ToItemDto(item);
+            var result = new List<Item>();
+            foreach (var updateSpecItem in updateSpecs)
+            {
+                var changes = updateSpecItem.Metadata.Id.BaseType.Equals(BaseType.Change);
+                var dto = changes ? DtoConverter.ToObjectDto(updateSpecItem) : DtoConverter.ToItemDto(updateSpecItem);
 
-            repository.Store(dto);
-            return Task.FromResult(DtoConverter.ToPlmItem(dto));
+                repository.Store(dto);
+                result.Add(DtoConverter.ToPlmItem(dto));
+            }
+
+            return Task.FromResult((IEnumerable<Item>)result);
+        }
+
+        public Task DeleteItems(IEnumerable<Id> ids)
+        {
+            foreach (var id in ids)
+            {
+                var dtoId = id.ToIdDto(null);
+                var isChange = id.TypeId.BaseType.Equals(BaseType.Change);
+                repository.DeleteItem(dtoId, isChange);
+            }
+
+            return Task.CompletedTask;
         }
 
         public Task<IEnumerable<Id>> QueryItems(Query query, Type type)
@@ -128,35 +162,32 @@ namespace FilesystemPLMDriver
             }
         }
 
-        public Task DeleteItem(Id id)
+        public Task<IEnumerable<RelationshipTable>> ReadRelationships(IEnumerable<Id> ids, RelationshipType type)
         {
-            var dtoId = id.ToIdDto(null);
-            var isChange = id.TypeId.BaseType.Equals(BaseType.Change);
-            repository.DeleteItem(dtoId, isChange);
+            var relationships = new List<RelationshipTable>();
+            foreach (var id in ids)
+            {
+                var table = new RelationshipTable
+                {
+                    Id = id,
+                    Type = type
+                };
 
-            return Task.CompletedTask;
+                if (type == RelationshipType.ManufacturerParts)
+                {
+                    table.Rows.AddRange(ManufacturerPartsUtils.GenerateSampleData());
+                }
+
+                relationships.Add(table);
+            }
+
+            return Task.FromResult((IEnumerable<RelationshipTable>)relationships);
         }
 
         public Task AdvanceState(Id id)
         {
             logger.LogWarning("Advance state is not implemented");
             return Task.CompletedTask;
-        }
-
-        public Task<RelationshipTable> ReadRelationship(Id id, RelationshipType type)
-        {
-            var table = new RelationshipTable
-            {
-                Id = id,
-                Type = type
-            };
-
-            if (type == RelationshipType.ManufacturerParts)
-            {
-                table.Rows.AddRange(ManufacturerPartsUtils.GenerateSampleData());
-            }
-
-            return Task.FromResult(table);
         }
 
         public Task<bool> TestAccess(Auth auth)
@@ -166,8 +197,9 @@ namespace FilesystemPLMDriver
 
         public Task<bool> IsOperationSupported(SupportedOperation operationType)
         {
-            var isSupported = operationType is SupportedOperation.CreateChangeOrder or SupportedOperation.ExtractPartChoicesFromAttributes;
-            logger.LogInformation($"Operation '{operationType}' is {(isSupported ? "": "NOT ")}supported");
+            var isSupported = operationType is SupportedOperation.CreateChangeOrder
+                or SupportedOperation.ExtractPartChoicesFromAttributes;
+            logger.LogInformation($"Operation '{operationType}' is {(isSupported ? "" : "NOT ")}supported");
             return Task.FromResult(isSupported);
         }
 
@@ -187,7 +219,9 @@ namespace FilesystemPLMDriver
         {
             foreach (var relationshipTable in tables)
             {
-                foreach (var directory in from relationshipTableRow in relationshipTable.Rows where !string.IsNullOrWhiteSpace(relationshipTableRow.FileId) select GetDirectoryForId(relationshipTableRow.FileId))
+                foreach (var directory in from relationshipTableRow in relationshipTable.Rows
+                         where !string.IsNullOrWhiteSpace(relationshipTableRow.FileId)
+                         select GetDirectoryForId(relationshipTableRow.FileId))
                 {
                     Directory.Delete(directory, true);
                 }
