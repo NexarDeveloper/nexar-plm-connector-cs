@@ -9,13 +9,15 @@ namespace FilesystemPLMDriver
 {
     public class Startup(IConfiguration configuration)
     {
-
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<MetadataConfig>(options => configuration.GetSection("Metadata").Bind(options));
+            services.Configure<MetadataConfig>(options => configuration.GetSection(MetadataConfig.Key).Bind(options));
             services.AddSingleton(new ItemRepository(Environment.CurrentDirectory));
 
             services.AddPLMServices<FileSystemPlmMetadataService, FileSystemPlmService>();
+
+            //Hybrid Agent specific
+            services.AddHybridAgent(configuration);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

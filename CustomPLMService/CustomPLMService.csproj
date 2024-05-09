@@ -35,8 +35,25 @@
     <Folder Include="Protos\" />
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="..\CustomPLM.proto">
+    <Protobuf Include="..\Proto\Messages.proto" GrpcServices="None">
+      <Link>Protos\Messages.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\Proto\CustomPLM.proto" GrpcServices="Server">
       <Link>Protos\CustomPLM.proto</Link>
     </Protobuf>
+    <Protobuf Include="..\Proto\ReverseCustomPLM.proto" GrpcServices="Client">
+      <Link>Protos\ReverseCustomPLM.proto</Link>
+    </Protobuf>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Proto\CustomPLM.proto">
+      <Link>Proto\CustomPLM.proto</Link>
+    </Content>
+    <Content Include="..\Proto\Messages.proto">
+      <Link>Proto\Messages.proto</Link>
+    </Content>
+    <Content Include="..\Proto\ReverseCustomPLM.proto">
+      <Link>Proto\ReverseCustomPLM.proto</Link>
+    </Content>
   </ItemGroup>
 </Project>

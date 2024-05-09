@@ -48,15 +48,12 @@ namespace CustomPLMService
     public class PlmServiceImpl(
         ICustomPlmMetadataService metadataService,
         ICustomPlmService service,
-        IMapper mapper,
+        IMapperBase mapper,
         ILogger<PlmServiceImpl> logger) : PLMService.PLMServiceBase
     {
         public override async Task<AuthResultTO> TestAccess(AuthTO request, ServerCallContext context)
         {
-            var authResult = new AuthResultTO
-            {
-                Success = false
-            };
+            var authResult = new AuthResultTO();
 
             if (await service.TestAccess(mapper.Map<Auth>(request)))
             {
@@ -65,6 +62,7 @@ namespace CustomPLMService
             }
             else
             {
+                authResult.Success = false;
                 authResult.Status = Types.Status.InvalidCredentials;
                 logger.LogInformation("Invalid Credentials Provided");
             }
@@ -76,12 +74,11 @@ namespace CustomPLMService
             IServerStreamWriter<TypeIdTO> responseStream, ServerCallContext context)
         {
             var typeIdentifiers = await metadataService.ReadTypeIdentifiers(mapper.Map<BaseType>(request.BaseType));
-            foreach (var plmTypeId in typeIdentifiers)
+            foreach (var typeId in typeIdentifiers.Select(mapper.Map<TypeIdTO>))
             {
-                await responseStream.WriteAsync(mapper.Map<TypeIdTO>(plmTypeId));
+                await responseStream.WriteAsync(typeId);
             }
         }
-
 
         public override async Task ReadTypes(TypeIdRequestTO request, IServerStreamWriter<TypeTO> responseStream,
             ServerCallContext context)
@@ -97,9 +94,9 @@ namespace CustomPLMService
             ServerCallContext context)
         {
             var items = await service.ReadItems(request.Data.Select(mapper.Map<Id>));
-            foreach (var message in items.Select(mapper.Map<ItemTO>))
+            foreach (var item in items.Select(mapper.Map<ItemTO>))
             {
-                await responseStream.WriteAsync(message);
+                await responseStream.WriteAsync(item);
             }
         }
 

@@ -1,6 +1,5 @@
 using AutoMapper;
 using CustomPLMService.Contract.Models;
-using CustomPLMService.Contract.Models.Authentication;
 using CustomPLMService.Contract.Models.Items;
 using Google.Protobuf;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

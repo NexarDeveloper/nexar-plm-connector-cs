@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package com.altium.eis.custom;
+
+option java_package = "com.altium.eis.custom";
+option java_multiple_files = true;
+option csharp_namespace = "Altium.PLM.Custom";
+
+import "Messages.proto";
+
+service PLMService {
+    rpc TestAccess (Auth) returns (AuthResult);
+    rpc ReadTypeIdentifiers (TypeRequest) returns (stream TypeId);
+    rpc ReadTypes (TypeIdRequest) returns (stream Type);
+    rpc ReadItems (IdRequest) returns (stream Item);
+    rpc CreateItems (ItemCreateRequest) returns (stream ItemResult);
+    rpc DeleteItems (IdRequest) returns (Void);
+    rpc QueryItems (QueryItemsRequest) returns (stream Id);
+    rpc UpdateItems (ItemUpdateRequest) returns (stream ItemResult);
+    rpc UploadFile (FileResource) returns (FileResourceResponse);
+    rpc CreateRelationships (CreateRelationshipsRequest) returns (Void);
+    rpc ReadRelationships (RelationshipRequest) returns (stream RelationshipTable);
+    rpc IsOperationSupported (OperationSupportedRequest) returns (OperationSupportedResponse);
+    rpc AdvanceState (AdvanceStateRequest) returns (Void);
+}

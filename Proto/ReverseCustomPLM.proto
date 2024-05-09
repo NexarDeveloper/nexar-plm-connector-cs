@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package com.altium.eis.custom.reverse;
+
+option java_package = "com.altium.eis.custom.reverse";
+option java_multiple_files = true;
+option csharp_namespace = "Altium.PLM.Custom.Reverse";
+
+import "Messages.proto";
+
+message Request {
+    string correlationId = 1;
+    oneof call {
+        Auth testAccess = 2;
+        TypeRequest readTypeIdentifiers = 3;
+        TypeIdRequest readTypes = 4;
+        IdRequest readItems = 5;
+        ItemCreateRequest createItems = 6;
+        IdRequest deleteItems = 7;
+        QueryItemsRequest queryItems = 8;
+        ItemUpdateRequest updateItems = 9;
+        FileResource uploadFile = 10;
+        CreateRelationshipsRequest createRelationships = 11;
+        RelationshipRequest readRelationships = 12;
+        OperationSupportedRequest isOperationSupported = 13;
+        AdvanceStateRequest advanceState = 14;
+    }
+}
+
+message AuthResultEx {
+    string correlationId = 1;
+    AuthResult value = 2;
+}
+
+message TypeIdEx {
+    string correlationId = 1;
+    TypeId value = 2;
+}
+
+message TypeEx {
+    string correlationId = 1;
+    Type value = 2;
+}
+
+message ItemEx {
+    string correlationId = 1;
+    Item value = 2;
+}
+
+message ItemResultEx {
+    string correlationId = 1;
+    ItemResult value = 2;
+}
+
+message VoidEx {
+    string correlationId = 1;
+    Void value = 2;
+}
+
+message IdEx {
+    string correlationId = 1;
+    Id value = 2;
+}
+
+message FileResourceResponseEx {
+    string correlationId = 1;
+    FileResourceResponse value = 2;
+}
+
+message RelationshipTableEx {
+    string correlationId = 1;
+    RelationshipTable value = 2;
+}
+
+message OperationSupportedResponseEx {
+    string correlationId = 1;
+    OperationSupportedResponse value = 2;
+}
+
+service ReversePLMService {
+    rpc GetRequest (Void) returns (stream Request);
+    rpc ReturnTestAccess (AuthResultEx) returns (Void);
+    rpc ReturnReadTypeIdentifiers (stream TypeIdEx) returns (Void);
+    rpc ReturnReadTypes (stream TypeEx) returns (Void);
+    rpc ReturnReadItems (stream ItemEx) returns (Void);
+    rpc ReturnCreateItems (stream ItemResultEx) returns (Void);
+    rpc ReturnDeleteItems (VoidEx) returns (Void);
+    rpc ReturnQueryItems (stream IdEx) returns (Void);
+    rpc ReturnUpdateItems (stream ItemResultEx) returns (Void);
+    rpc ReturnUploadFile (FileResourceResponseEx) returns (Void);
+    rpc ReturnCreateRelationships (VoidEx) returns (Void);
+    rpc ReturnReadRelationships (stream RelationshipTableEx) returns (Void);
+    rpc ReturnIsOperationSupported (OperationSupportedResponseEx) returns (Void);
+    rpc ReturnAdvanceState (VoidEx) returns (Void);
+}
+
