@@ -5,6 +5,7 @@ using Altium.PLM.Custom.Reverse;
 using CustomPLMService.Configs;
 using CustomPLMService.Contract;
 using CustomPLMService.Contract.Models.Authentication;
+using CustomPLMService.HybridAgent;
 using CustomPLMService.Interceptors;
 using CustomPLMService.Middleware;
 using Grpc.Core;
@@ -45,7 +46,7 @@ public static class CustomPLMServiceExtensions
         services.Configure<HybridAgentConfig>(options =>
             configuration.GetSection(HybridAgentConfig.Key).Bind(options));
         
-        services.AddTransient<IHybridAgent, HybridAgent>();
+        services.AddTransient<IHybridAgent, HybridAgent.HybridAgent>();
         services.AddSingleton<IHostedService, HybridAgentServiceImpl>();
         services.AddGrpcClient<ReversePLMService.ReversePLMServiceClient>(o =>
             {
@@ -76,6 +77,8 @@ public static class CustomPLMServiceExtensions
                 o.ServiceConfig = new ServiceConfig { MethodConfigs = { defaultMethodConfig } };
                 o.ThrowOperationCanceledOnCancellation = true;
             });
+
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<HybridAgent.HybridAgent>());
 
         return services;
     }    

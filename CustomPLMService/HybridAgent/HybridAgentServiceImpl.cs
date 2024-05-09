@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Altium.PLM.Custom.Reverse;
-using CustomPLMService.Configs;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+namespace CustomPLMService.HybridAgent;
 
-namespace CustomPLMService;
-
-public class HybridAgentServiceImpl(IHybridAgent hybridAgent, ReversePLMService.ReversePLMServiceClient plmClient, IOptions<HybridAgentConfig> config, ILogger<HybridAgentServiceImpl> logger)
+public class HybridAgentServiceImpl(IHybridAgent hybridAgent, ILogger<HybridAgentServiceImpl> logger)
     : IHostedService, IDisposable
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();

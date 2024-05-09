@@ -22,6 +22,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="MediatR" Version="12.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
   </ItemGroup>
@@ -44,16 +45,5 @@
     <Protobuf Include="..\Proto\ReverseCustomPLM.proto" GrpcServices="Client">
       <Link>Protos\ReverseCustomPLM.proto</Link>
     </Protobuf>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\Proto\CustomPLM.proto">
-      <Link>Proto\CustomPLM.proto</Link>
-    </Content>
-    <Content Include="..\Proto\Messages.proto">
-      <Link>Proto\Messages.proto</Link>
-    </Content>
-    <Content Include="..\Proto\ReverseCustomPLM.proto">
-      <Link>Proto\ReverseCustomPLM.proto</Link>
-    </Content>
   </ItemGroup>
 </Project>

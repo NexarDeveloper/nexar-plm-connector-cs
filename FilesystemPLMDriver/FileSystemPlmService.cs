@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CustomPLMService.Contract.Models;
 using CustomPLMService.Contract.Models.Query;
@@ -19,7 +20,7 @@ namespace FilesystemPLMDriver
     public class FileSystemPlmService(ItemRepository repository, ILogger<FileSystemPlmService> logger)
         : ICustomPlmService
     {
-        public Task<IEnumerable<Item>> CreateItems(IEnumerable<ItemCreateSpec> items)
+        public Task<IEnumerable<Item>> CreateItems(IEnumerable<ItemCreateSpec> items, CancellationToken cancellationToken)
         {
             var result = new List<Item>();
             foreach (var item in items)
@@ -34,7 +35,7 @@ namespace FilesystemPLMDriver
             return Task.FromResult((IEnumerable<Item>)result);
         }
 
-        public Task<IEnumerable<Item>> ReadItems(IEnumerable<Id> plmIds)
+        public Task<IEnumerable<Item>> ReadItems(IEnumerable<Id> plmIds, CancellationToken cancellationToken)
         {
             var result = new List<Item>();
             foreach (var plmId in plmIds)
@@ -50,7 +51,7 @@ namespace FilesystemPLMDriver
             return Task.FromResult((IEnumerable<Item>)result);
         }
 
-        public Task<IEnumerable<Item>> UpdateItems(IEnumerable<ItemUpdateSpec> updateSpecs)
+        public Task<IEnumerable<Item>> UpdateItems(IEnumerable<ItemUpdateSpec> updateSpecs, CancellationToken cancellationToken)
         {
             var result = new List<Item>();
             foreach (var updateSpecItem in updateSpecs)
@@ -65,7 +66,7 @@ namespace FilesystemPLMDriver
             return Task.FromResult((IEnumerable<Item>)result);
         }
 
-        public Task DeleteItems(IEnumerable<Id> ids)
+        public Task DeleteItems(IEnumerable<Id> ids, CancellationToken cancellationToken)
         {
             foreach (var id in ids)
             {
@@ -77,7 +78,7 @@ namespace FilesystemPLMDriver
             return Task.CompletedTask;
         }
 
-        public Task<IEnumerable<Id>> QueryItems(Query query, Type type)
+        public Task<IEnumerable<Id>> QueryItems(Query query, Type type, CancellationToken cancellationToken)
         {
             var allItems = repository.LoadAllItems();
             var filtered = new List<ItemDto>();
@@ -133,7 +134,7 @@ namespace FilesystemPLMDriver
             return Task.FromResult<IEnumerable<Id>>(output);
         }
 
-        public async Task CreateRelationships(IEnumerable<RelationshipTable> tables)
+        public async Task CreateRelationships(IEnumerable<RelationshipTable> tables, CancellationToken cancellationToken)
         {
             var relationshipTables = tables.ToList();
             try
@@ -162,7 +163,7 @@ namespace FilesystemPLMDriver
             }
         }
 
-        public Task<IEnumerable<RelationshipTable>> ReadRelationships(IEnumerable<Id> ids, RelationshipType type)
+        public Task<IEnumerable<RelationshipTable>> ReadRelationships(IEnumerable<Id> ids, RelationshipType type, CancellationToken cancellationToken)
         {
             var relationships = new List<RelationshipTable>();
             foreach (var id in ids)
@@ -184,18 +185,18 @@ namespace FilesystemPLMDriver
             return Task.FromResult((IEnumerable<RelationshipTable>)relationships);
         }
 
-        public Task AdvanceState(Id id)
+        public Task AdvanceState(Id id, CancellationToken cancellationToken)
         {
             logger.LogWarning("Advance state is not implemented");
             return Task.CompletedTask;
         }
 
-        public Task<bool> TestAccess(Auth auth)
+        public Task<bool> TestAccess(Auth auth, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }
 
-        public Task<bool> IsOperationSupported(SupportedOperation operationType)
+        public Task<bool> IsOperationSupported(SupportedOperation operationType, CancellationToken cancellationToken)
         {
             var isSupported = operationType is SupportedOperation.CreateChangeOrder
                 or SupportedOperation.ExtractPartChoicesFromAttributes;
@@ -203,7 +204,7 @@ namespace FilesystemPLMDriver
             return Task.FromResult(isSupported);
         }
 
-        public async Task<string> UploadFile(FileResource request)
+        public async Task<string> UploadFile(FileResource request, CancellationToken cancellationToken)
         {
             var id = Guid.NewGuid().ToString();
 

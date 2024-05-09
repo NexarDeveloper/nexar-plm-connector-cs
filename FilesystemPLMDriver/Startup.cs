@@ -16,13 +16,14 @@ namespace FilesystemPLMDriver
 
             services.AddPLMServices<FileSystemPlmMetadataService, FileSystemPlmService>();
 
-            //Hybrid Agent specific
+            // Uncomment if you want to use Hybrid Agent mode
             services.AddHybridAgent(configuration);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UsePLMServices(env);
+            // Uncomment if you want to use Classic mode
+            // app.UsePLMServices(env);
         }
     }
 }

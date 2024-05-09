@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Threading;
 using CustomPLMService.Contract.Models.Items;
 using CustomPLMService.Contract.Models.Metadata;
 using FilesystemPLMDriver;
@@ -79,7 +80,7 @@ namespace CustomPLMService.Tests
             updateSpec.Values.Add(StringAttribute("name", "nameValue"));
             updateSpec.Values.Add(StringAttribute("description", "descriptionUpdated"));
 
-            var result = await service.UpdateItems(new[] { updateSpec });
+            var result = await service.UpdateItems(new[] { updateSpec }, CancellationToken.None);
             var updated = result.First();
             Assert.Equal(created.Id, updated.Id);
             Assert.Equal(2, updated.Values.Count);
@@ -87,7 +88,7 @@ namespace CustomPLMService.Tests
             Assert.Equal("descriptionUpdated", StringAttribute(updated, "description"));
 
             // read item
-            var items = await service.ReadItems(new[] { created.Id });
+            var items = await service.ReadItems(new[] { created.Id }, CancellationToken.None);
             var item = items.First();
             Assert.Equal(created.Id, item.Id);
             Assert.Equal(2, item.Values.Count);
@@ -112,7 +113,7 @@ namespace CustomPLMService.Tests
             };
             createSpec.Values.Add(StringAttribute("name", "nameValue"));
             createSpec.Values.Add(StringAttribute("description", "descriptionValue"));
-            var createResult = await service.CreateItems(new[] { createSpec });
+            var createResult = await service.CreateItems(new[] { createSpec }, CancellationToken.None);
             var created = createResult.First();
             Assert.NotNull(created.Id);
             Assert.Equal(ecoId, created.Id.TypeId);
@@ -132,7 +133,7 @@ namespace CustomPLMService.Tests
             updateSpec.Values.Add(StringAttribute("name", "nameValue"));
             updateSpec.Values.Add(StringAttribute("description", "descriptionUpdated"));
 
-            var updateResult = await service.UpdateItems(new[] { updateSpec });
+            var updateResult = await service.UpdateItems(new[] { updateSpec }, CancellationToken.None);
             var updated = updateResult.First();
             Assert.Equal(created.Id, updated.Id);
             Assert.Equal(2, updated.Values.Count);
@@ -140,7 +141,7 @@ namespace CustomPLMService.Tests
             Assert.Equal("descriptionUpdated", StringAttribute(updated, "description"));
 
             // read item
-            var readResult = await service.ReadItems(new[] { created.Id });
+            var readResult = await service.ReadItems(new[] { created.Id }, CancellationToken.None);
             var item = readResult.First();
             Assert.Equal(created.Id, item.Id);
             Assert.Equal(2, item.Values.Count);
@@ -166,7 +167,7 @@ namespace CustomPLMService.Tests
             };
             createSpec.Values.Add(StringAttribute("name", "nameValue"));
             createSpec.Values.Add(StringAttribute("description", "descriptionValue"));
-            var created = await service.CreateItems(new[] { createSpec });
+            var created = await service.CreateItems(new[] { createSpec }, CancellationToken.None);
 
             return (capacitorId, capacitor, created.First());
         }
@@ -184,7 +185,7 @@ namespace CustomPLMService.Tests
                     Id = "Capacitor"
                 }
             };
-            var result = await service.ReadItems(new[] { plmId });
+            var result = await service.ReadItems(new[] { plmId }, CancellationToken.None);
 
             Assert.Empty(result);
         }
@@ -220,20 +221,20 @@ namespace CustomPLMService.Tests
                 matchingSpecs.Add(matchingSpec);
             }
 
-            await service.CreateItems(matchingSpecs);
+            await service.CreateItems(matchingSpecs, CancellationToken.None);
 
             var wrongTypeSpec = new ItemCreateSpec
             {
                 Metadata = resistor,
             };
-            await service.CreateItems(new[] { wrongTypeSpec });
+            await service.CreateItems(new[] { wrongTypeSpec }, CancellationToken.None);
 
             var wrongAttributeSpec = new ItemCreateSpec
             {
                 Metadata = capacitor,
             };
             wrongAttributeSpec.Values.Add(StringAttribute("x", "z"));
-            await service.CreateItems(new[] { wrongAttributeSpec });
+            await service.CreateItems(new[] { wrongAttributeSpec }, CancellationToken.None);
 
             var q = new Query
             {
@@ -245,7 +246,7 @@ namespace CustomPLMService.Tests
                 Value = "y"
             };
             q.Attrs.Add(att);
-            var found = await service.QueryItems(q, capacitor);
+            var found = await service.QueryItems(q, capacitor, CancellationToken.None);
             Assert.True(count == found.Count());
         }
 
