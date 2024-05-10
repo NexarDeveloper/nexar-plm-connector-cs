@@ -14,7 +14,7 @@ namespace CustomPLMService.HybridAgent.Mediator.Handlers;
 public class UploadFileNotificationHandler(
     ReversePLMService.ReversePLMServiceClient grpcClient,
     ICustomPlmService plmService,
-    IMapperBase mapper,
+    IMapper mapper,
     ILogger<UploadFileNotificationHandler> logger) : INotificationHandler<UploadFileNotification>
 {
 

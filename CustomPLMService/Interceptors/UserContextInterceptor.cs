@@ -6,7 +6,7 @@ using Grpc.Core.Interceptors;
 using Auth = Altium.PLM.Custom.Auth;
 namespace CustomPLMService.Interceptors;
 
-public class UserContextInterceptor(IContext userContext, IMapperBase mapper) : Interceptor
+public class UserContextInterceptor(IContext userContext, IMapper mapper) : Interceptor
 {
     public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(
         TRequest request,

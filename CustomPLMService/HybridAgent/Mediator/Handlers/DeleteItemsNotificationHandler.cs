@@ -13,13 +13,12 @@ namespace CustomPLMService.HybridAgent.Mediator.Handlers;
 
 public class DeleteItemsNotificationHandler(
     ReversePLMService.ReversePLMServiceClient grpcClient, 
-    ICustomPlmService plmService, IMapperBase mapper, 
+    ICustomPlmService plmService, IMapper mapper, 
     ILogger<DeleteItemsNotificationHandler> logger) : INotificationHandler<DeleteItemsNotification>
 {
 
     public async Task Handle(DeleteItemsNotification notification, CancellationToken cancellationToken)
     {
-        //TODO: add logging in mediator that operation started/finished
         logger.LogInformation("Handling Delete Items request");
         
         await plmService.DeleteItems(notification.Request.Data.Select(mapper.Map<Id>), cancellationToken);

@@ -16,7 +16,7 @@ namespace CustomPLMService.HybridAgent.Mediator.Handlers;
 public class ReadRelationshipNotificationHandler(
     ReversePLMService.ReversePLMServiceClient grpcClient,
     ICustomPlmService plmService,
-    IMapperBase mapper,
+    IMapper mapper,
     ILogger<ReadRelationshipNotificationHandler> logger) : INotificationHandler<ReadRelationshipNotification>
 {
 

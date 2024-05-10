@@ -15,7 +15,7 @@ namespace CustomPLMService.HybridAgent.Mediator.Handlers;
 public class ReadTypeIdentifiersNotificationHandler(
     ReversePLMService.ReversePLMServiceClient grpcClient,
     ICustomPlmMetadataService plmMetadataService,
-    IMapperBase mapper,
+    IMapper mapper,
     ILogger<ReadTypeIdentifiersNotificationHandler> logger) : INotificationHandler<ReadTypeIdentifiersNotification>
 {
 

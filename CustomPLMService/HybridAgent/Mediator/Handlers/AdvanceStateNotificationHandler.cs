@@ -14,7 +14,7 @@ namespace CustomPLMService.HybridAgent.Mediator.Handlers;
 public class AdvanceStateNotificationHandler(
     ReversePLMService.ReversePLMServiceClient grpcClient, 
     ICustomPlmService plmService, 
-    IMapperBase mapper, 
+    IMapper mapper, 
     ILogger<AdvanceStateNotificationHandler> logger) : INotificationHandler<AdvanceStateNotification>
 {
     public async Task Handle(AdvanceStateNotification notification, CancellationToken cancellationToken)

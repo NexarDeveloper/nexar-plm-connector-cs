@@ -32,7 +32,18 @@ public class HybridAgent(
                     logger.LogInformation($"Received request {request}");
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                    (Task.Run(() => mediator.Publish(request.AsNotification(), ct), ct)).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+                    Task.Run(
+                        () =>
+                        {
+                            try
+                            {
+                                mediator.Publish(request.AsNotification(), ct);
+                            }
+                            catch (Exception e)
+                            {
+                                logger.LogError(e, "Unexpected error");
+                            }
+                        }, ct);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                 }
             }

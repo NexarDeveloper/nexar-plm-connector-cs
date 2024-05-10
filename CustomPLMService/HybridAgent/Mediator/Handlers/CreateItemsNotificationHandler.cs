@@ -17,7 +17,7 @@ namespace CustomPLMService.HybridAgent.Mediator.Handlers;
 
 public class CreateItemsNotificationHandler(
     ReversePLMService.ReversePLMServiceClient grpcClient, 
-    ICustomPlmService plmService, IMapperBase mapper, 
+    ICustomPlmService plmService, IMapper mapper, 
     ILogger<CreateItemsNotificationHandler> logger) : INotificationHandler<CreateItemsNotification>
 {
 

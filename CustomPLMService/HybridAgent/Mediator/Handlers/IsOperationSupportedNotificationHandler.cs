@@ -16,7 +16,7 @@ using OperationSupportedResponseTO = OperationSupportedResponse;
 public class IsOperationSupportedNotificationHandler(
     ReversePLMService.ReversePLMServiceClient grpcClient,
     ICustomPlmService plmService,
-    IMapperBase mapper,
+    IMapper mapper,
     ILogger<IsOperationSupportedNotificationHandler> logger) : INotificationHandler<IsOperationSupportedNotification>
 {
     public async Task Handle(IsOperationSupportedNotification notification, CancellationToken cancellationToken)

@@ -16,7 +16,7 @@ namespace CustomPLMService.HybridAgent.Mediator.Handlers;
 public class QueryItemsNotificationHandler(
     ReversePLMService.ReversePLMServiceClient grpcClient,
     ICustomPlmService plmService,
-    IMapperBase mapper,
+    IMapper mapper,
     ILogger<QueryItemsNotificationHandler> logger) : INotificationHandler<QueryItemsNotification>
 {
 

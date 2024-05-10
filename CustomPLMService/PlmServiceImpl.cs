@@ -49,7 +49,7 @@ namespace CustomPLMService
     public class PlmServiceImpl(
         ICustomPlmMetadataService metadataService,
         ICustomPlmService service,
-        IMapperBase mapper,
+        IMapper mapper,
         ILogger<PlmServiceImpl> logger) : PLMService.PLMServiceBase
     {
         public async override Task<AuthResultTO> TestAccess(AuthTO request, ServerCallContext context)

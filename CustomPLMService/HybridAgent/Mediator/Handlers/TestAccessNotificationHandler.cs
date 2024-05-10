@@ -14,13 +14,13 @@ namespace CustomPLMService.HybridAgent.Mediator.Handlers;
 public class TestAccessNotificationHandler(
     ReversePLMService.ReversePLMServiceClient grpcClient,
     ICustomPlmService plmService,
-    IMapperBase mapper,
+    IMapper mapper,
     ILogger<TestAccessNotificationHandler> logger) : INotificationHandler<TestAccessNotification>
 {
 
     public async Task Handle(TestAccessNotification notification, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Handling Read Types request");
+        logger.LogInformation("Handling Test Access request");
 
         var authResult = new AuthResultTO();
 
