@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 namespace CustomPLMService;
 
+[ExcludeFromCodeCoverage]
 public static class CustomPLMServiceExtensions
 {
     public static IServiceCollection AddPLMServices<TMetadataService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(this IServiceCollection services) where TMetadataService : class, ICustomPlmMetadataService where TService : class, ICustomPlmService
@@ -36,16 +37,16 @@ public static class CustomPLMServiceExtensions
         services.AddTransient<GlobalExceptionHandler>();
 
         return services;
-    }    
-    
+    }
+
     public static IServiceCollection AddHybridAgent(this IServiceCollection services, IConfiguration configuration)
     {
         var hybridAgentConfig = new HybridAgentConfig();
         configuration.GetSection(HybridAgentConfig.Key).Bind(hybridAgentConfig);
-        
+
         services.Configure<HybridAgentConfig>(options =>
             configuration.GetSection(HybridAgentConfig.Key).Bind(options));
-        
+
         services.AddTransient<IHybridAgent, HybridAgent.HybridAgent>();
         services.AddSingleton<IHostedService, HybridAgentServiceImpl>();
         services.AddGrpcClient<ReversePLMService.ReversePLMServiceClient>(o =>
@@ -53,36 +54,49 @@ public static class CustomPLMServiceExtensions
                 o.Address = new Uri(hybridAgentConfig.Uri);
                 o.CallOptionsActions.Add(opt => opt.CallOptions.WithDeadline(DateTime.UtcNow.AddSeconds(hybridAgentConfig.DeadlineInSeconds)));
             })
-            .AddCallCredentials((context, metadata) =>
+            .AddCallCredentials((_, metadata) =>
             {
                 if (!string.IsNullOrEmpty(hybridAgentConfig.ApiKey))
                 {
                     metadata.Add("Authorization", $"{hybridAgentConfig.ApiKey}");
                 }
+
                 return Task.CompletedTask;
             }).ConfigureChannel(o =>
             {
                 var defaultMethodConfig = new MethodConfig
                 {
-                    Names = { MethodName.Default },
+                    Names =
+                    {
+                        MethodName.Default
+                    },
                     RetryPolicy = new RetryPolicy
                     {
                         MaxAttempts = hybridAgentConfig.RetryMaxAttempts,
                         InitialBackoff = TimeSpan.FromSeconds(hybridAgentConfig.RetryInitialBackoffInSeconds),
                         MaxBackoff = TimeSpan.FromSeconds(hybridAgentConfig.RetryMaxBackoffInSeconds),
                         BackoffMultiplier = 1.5,
-                        RetryableStatusCodes = { StatusCode.Unavailable }
+                        RetryableStatusCodes =
+                        {
+                            StatusCode.Unavailable
+                        }
                     }
                 };
-                o.ServiceConfig = new ServiceConfig { MethodConfigs = { defaultMethodConfig } };
+                o.ServiceConfig = new ServiceConfig
+                {
+                    MethodConfigs =
+                    {
+                        defaultMethodConfig
+                    }
+                };
                 o.ThrowOperationCanceledOnCancellation = true;
             });
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<HybridAgent.HybridAgent>());
 
         return services;
-    }    
-    
+    }
+
     public static IApplicationBuilder UsePLMServices(this IApplicationBuilder app, IWebHostEnvironment env)
     {
         if (env.IsDevelopment())
@@ -91,7 +105,7 @@ public static class CustomPLMServiceExtensions
         }
 
         app.UseRouting();
-        
+
         app.UseMiddleware<GlobalExceptionHandler>();
         app.UseEndpoints(endpoints =>
         {

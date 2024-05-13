@@ -20,19 +20,33 @@ namespace FilesystemPLMDriver
     public class FileSystemPlmService(ItemRepository repository, ILogger<FileSystemPlmService> logger)
         : ICustomPlmService
     {
-        public Task<IEnumerable<Item>> CreateItems(IEnumerable<ItemCreateSpec> items, CancellationToken cancellationToken)
+        public Task<IEnumerable<ItemResult>> CreateItems(IEnumerable<ItemCreateSpec> items, CancellationToken cancellationToken)
         {
-            var result = new List<Item>();
+            var result = new List<ItemResult>();
             foreach (var item in items)
             {
-                var changes = item.Metadata.Id.BaseType.Equals(BaseType.Change);
-                var dto = changes ? DtoConverter.ToObjectDto(item) : DtoConverter.ToItemDto(item);
+                try
+                {
+                    var changes = item.Metadata.Id.BaseType.Equals(BaseType.Change);
+                    var dto = changes ? DtoConverter.ToObjectDto(item) : DtoConverter.ToItemDto(item);
 
-                repository.Store(dto);
-                result.Add(DtoConverter.ToPlmItem(dto));
+                    repository.Store(dto);
+                    result.Add(new ItemResult
+                    {
+                        Item = DtoConverter.ToPlmItem(dto)
+                    });
+                }
+                catch (Exception e)
+                {
+                    result.Add(new ItemResult
+                    {
+                        IsError = true,
+                        ErrorMessage = e.Message
+                    });
+                }
             }
 
-            return Task.FromResult((IEnumerable<Item>)result);
+            return Task.FromResult((IEnumerable<ItemResult>)result);
         }
 
         public Task<IEnumerable<Item>> ReadItems(IEnumerable<Id> plmIds, CancellationToken cancellationToken)
@@ -51,19 +65,33 @@ namespace FilesystemPLMDriver
             return Task.FromResult((IEnumerable<Item>)result);
         }
 
-        public Task<IEnumerable<Item>> UpdateItems(IEnumerable<ItemUpdateSpec> updateSpecs, CancellationToken cancellationToken)
+        public Task<IEnumerable<ItemResult>> UpdateItems(IEnumerable<ItemUpdateSpec> updateSpecs, CancellationToken cancellationToken)
         {
-            var result = new List<Item>();
+            var result = new List<ItemResult>();
             foreach (var updateSpecItem in updateSpecs)
             {
-                var changes = updateSpecItem.Metadata.Id.BaseType.Equals(BaseType.Change);
-                var dto = changes ? DtoConverter.ToObjectDto(updateSpecItem) : DtoConverter.ToItemDto(updateSpecItem);
+                try
+                {
+                    var changes = updateSpecItem.Metadata.Id.BaseType.Equals(BaseType.Change);
+                    var dto = changes ? DtoConverter.ToObjectDto(updateSpecItem) : DtoConverter.ToItemDto(updateSpecItem);
 
-                repository.Store(dto);
-                result.Add(DtoConverter.ToPlmItem(dto));
+                    repository.Store(dto);
+                    result.Add(new ItemResult
+                    {
+                        Item = DtoConverter.ToPlmItem(dto)
+                    });
+                }
+                catch (Exception e)
+                {
+                    result.Add(new ItemResult
+                    {
+                        IsError = true,
+                        ErrorMessage = e.Message
+                    });
+                }
             }
 
-            return Task.FromResult((IEnumerable<Item>)result);
+            return Task.FromResult((IEnumerable<ItemResult>)result);
         }
 
         public Task DeleteItems(IEnumerable<Id> ids, CancellationToken cancellationToken)
@@ -221,8 +249,8 @@ namespace FilesystemPLMDriver
             foreach (var relationshipTable in tables)
             {
                 foreach (var directory in from relationshipTableRow in relationshipTable.Rows
-                         where !string.IsNullOrWhiteSpace(relationshipTableRow.FileId)
-                         select GetDirectoryForId(relationshipTableRow.FileId))
+                                          where !string.IsNullOrWhiteSpace(relationshipTableRow.FileId)
+                                          select GetDirectoryForId(relationshipTableRow.FileId))
                 {
                     Directory.Delete(directory, true);
                 }

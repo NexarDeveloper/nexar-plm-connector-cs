@@ -1,10 +1,12 @@
 ﻿using CustomPLMService.Contract.Models.Metadata;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 namespace CustomPLMService.Contract.Models.Items;
 
 /// <summary>
 /// Represents object numbering format in external system. Numbering formats are defining how part (item) numbers are assigned to the new objects in external system.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class NumberingFormat
 {
     /// <summary>

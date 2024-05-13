@@ -1,6 +1,8 @@
-﻿using System.Xml.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Xml.Serialization;
 namespace FilesystemPLMDriver.Models;
 
+[ExcludeFromCodeCoverage]
 [XmlRoot("item")]
 public class ItemDto : ObjectDto
 {

@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace FilesystemPLMDriver
 {
+    [ExcludeFromCodeCoverage]
     public class Startup(IConfiguration configuration)
     {
         public void ConfigureServices(IServiceCollection services)
@@ -16,14 +18,14 @@ namespace FilesystemPLMDriver
 
             services.AddPLMServices<FileSystemPlmMetadataService, FileSystemPlmService>();
 
-            // Uncomment if you want to use Hybrid Agent mode
+            // Comment if you don't want to use Hybrid Agent mode (Generic Connector opens connection to Altium 365)
             services.AddHybridAgent(configuration);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // Uncomment if you want to use Classic mode
-            // app.UsePLMServices(env);
+            // Comment if you dont want to use Classic mode (Generic Connector acting as a server)
+            app.UsePLMServices(env);
         }
     }
 }

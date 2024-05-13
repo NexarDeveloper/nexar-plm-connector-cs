@@ -1,8 +1,10 @@
-﻿namespace CustomPLMService.Contract.Models.Authentication;
+﻿using System.Diagnostics.CodeAnalysis;
+namespace CustomPLMService.Contract.Models.Authentication;
 
 /// <summary>
 /// Represents credentials in external system.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class Credentials
 {
     /// <summary>

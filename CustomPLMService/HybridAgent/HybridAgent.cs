@@ -26,7 +26,7 @@ public class HybridAgent(
             try
             {
                 using var getRequestResponse = grpcClient.GetRequest(new VoidTO(), cancellationToken: ct);
-                while (await getRequestResponse.ResponseStream.MoveNext())
+                while (await getRequestResponse.ResponseStream.MoveNext() && !ct.IsCancellationRequested)
                 {
                     var request = getRequestResponse.ResponseStream.Current;
                     logger.LogInformation($"Received request {request}");
@@ -41,7 +41,7 @@ public class HybridAgent(
                             }
                             catch (Exception e)
                             {
-                                logger.LogError(e, "Unexpected error");
+                                logger.LogError(e, "Unexpected mediator error occured");
                             }
                         }, ct);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
@@ -60,5 +60,7 @@ public class HybridAgent(
                 logger.LogError(ex, "Unexpected error occured");
             }
         }
+        
+        logger.LogInformation("Hybrid Agent Cancelled");
     }
 }

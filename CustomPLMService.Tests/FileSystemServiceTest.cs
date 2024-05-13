@@ -1,6 +1,7 @@
 ﻿using Xunit;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.IO;
 using System.Threading;
@@ -17,6 +18,7 @@ using Type = CustomPLMService.Contract.Models.Metadata.Type;
 
 namespace CustomPLMService.Tests
 {
+    [ExcludeFromCodeCoverage]
     public class FileSystemServiceTest : IDisposable
     {
         private readonly string serviceDir;
@@ -81,7 +83,7 @@ namespace CustomPLMService.Tests
             updateSpec.Values.Add(StringAttribute("description", "descriptionUpdated"));
 
             var result = await service.UpdateItems(new[] { updateSpec }, CancellationToken.None);
-            var updated = result.First();
+            var updated = result.First().Item;
             Assert.Equal(created.Id, updated.Id);
             Assert.Equal(2, updated.Values.Count);
             Assert.Equal("nameValue", StringAttribute(updated, "name"));
@@ -106,7 +108,7 @@ namespace CustomPLMService.Tests
                 Id = "ECO",
                 BaseType = BaseType.Change
             };
-            var eco = (await metadataService.ReadTypes(new[] { ecoId })).First();
+            var eco = (await metadataService.ReadTypes(new[] { ecoId }, CancellationToken.None)).First();
             var createSpec = new ItemCreateSpec
             {
                 Metadata = eco,
@@ -114,7 +116,7 @@ namespace CustomPLMService.Tests
             createSpec.Values.Add(StringAttribute("name", "nameValue"));
             createSpec.Values.Add(StringAttribute("description", "descriptionValue"));
             var createResult = await service.CreateItems(new[] { createSpec }, CancellationToken.None);
-            var created = createResult.First();
+            var created = createResult.First().Item;
             Assert.NotNull(created.Id);
             Assert.Equal(ecoId, created.Id.TypeId);
             Assert.NotNull(created.Id.PrivateId);
@@ -134,7 +136,7 @@ namespace CustomPLMService.Tests
             updateSpec.Values.Add(StringAttribute("description", "descriptionUpdated"));
 
             var updateResult = await service.UpdateItems(new[] { updateSpec }, CancellationToken.None);
-            var updated = updateResult.First();
+            var updated = updateResult.First().Item;
             Assert.Equal(created.Id, updated.Id);
             Assert.Equal(2, updated.Values.Count);
             Assert.Equal("nameValue", StringAttribute(updated, "name"));
@@ -160,7 +162,7 @@ namespace CustomPLMService.Tests
             var capacitor = (await metadataService.ReadTypes(new List<TypeId>
             {
                 capacitorId
-            })).First();
+            }, CancellationToken.None)).First();
             var createSpec = new ItemCreateSpec
             {
                 Metadata = capacitor,
@@ -169,7 +171,7 @@ namespace CustomPLMService.Tests
             createSpec.Values.Add(StringAttribute("description", "descriptionValue"));
             var created = await service.CreateItems(new[] { createSpec }, CancellationToken.None);
 
-            return (capacitorId, capacitor, created.First());
+            return (capacitorId, capacitor, created.First().Item);
         }
 
         [Fact]
@@ -207,8 +209,8 @@ namespace CustomPLMService.Tests
                 Name = "Resistor",
                 Id = "Resistor"
             };
-            var capacitor = (await metadataService.ReadTypes(new[] { capacitorId })).First();
-            var resistor = (await metadataService.ReadTypes(new[] { resistorId })).First();
+            var capacitor = (await metadataService.ReadTypes(new[] { capacitorId }, CancellationToken.None)).First();
+            var resistor = (await metadataService.ReadTypes(new[] { resistorId }, CancellationToken.None)).First();
 
             var matchingSpecs = new List<ItemCreateSpec>();
             for (var i = 0; i < count; i++)

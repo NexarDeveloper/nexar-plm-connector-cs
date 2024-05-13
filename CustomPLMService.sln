@@ -12,6 +12,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomPLMService.Contract",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Documentation", "Documentation\Documentation.csproj", "{AB7273BC-0E26-40AA-B379-C06540D350B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomPLMService.Contract.Tests", "CustomPLMService.Contract.Tests\CustomPLMService.Contract.Tests.csproj", "{FA7E14F8-BD5B-4F17-9BF2-5086B0BFEFDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{0AABE084-0263-4B46-B93F-7596FE58E844}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0AABE084-0263-4B46-B93F-7596FE58E844}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0AABE084-0263-4B46-B93F-7596FE58E844}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA7E14F8-BD5B-4F17-9BF2-5086B0BFEFDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA7E14F8-BD5B-4F17-9BF2-5086B0BFEFDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA7E14F8-BD5B-4F17-9BF2-5086B0BFEFDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA7E14F8-BD5B-4F17-9BF2-5086B0BFEFDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

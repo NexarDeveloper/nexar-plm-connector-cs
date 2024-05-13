@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Altium.PLM.Custom;
@@ -28,7 +27,6 @@ using TypeIdTO = Altium.PLM.Custom.TypeId;
 using IdTO = Altium.PLM.Custom.Id;
 using ItemTO = Altium.PLM.Custom.Item;
 using ItemResultTO = Altium.PLM.Custom.ItemResult;
-using ErrorTO = Altium.PLM.Custom.Error;
 using FileResource = CustomPLMService.Contract.Models.Items.FileResource;
 using ItemUpdateRequestTO = Altium.PLM.Custom.ItemUpdateRequest;
 using FileResourceTO = Altium.PLM.Custom.FileResource;
@@ -74,7 +72,7 @@ namespace CustomPLMService
         public async override Task ReadTypeIdentifiers(TypeRequestTO request,
             IServerStreamWriter<TypeIdTO> responseStream, ServerCallContext context)
         {
-            var typeIdentifiers = await metadataService.ReadTypeIdentifiers(mapper.Map<BaseType>(request.BaseType));
+            var typeIdentifiers = await metadataService.ReadTypeIdentifiers(mapper.Map<BaseType>(request.BaseType), CancellationToken.None);
             foreach (var typeId in typeIdentifiers.Select(mapper.Map<TypeIdTO>))
             {
                 await responseStream.WriteAsync(typeId);
@@ -84,7 +82,7 @@ namespace CustomPLMService
         public async override Task ReadTypes(TypeIdRequestTO request, IServerStreamWriter<TypeTO> responseStream,
             ServerCallContext context)
         {
-            var types = await metadataService.ReadTypes(request.Data.Select(mapper.Map<TypeId>));
+            var types = await metadataService.ReadTypes(request.Data.Select(mapper.Map<TypeId>), CancellationToken.None);
             foreach (var type in types.Select(mapper.Map<TypeTO>))
             {
                 await responseStream.WriteAsync(type);
@@ -115,55 +113,21 @@ namespace CustomPLMService
         public async override Task CreateItems(ItemCreateRequestTO request,
             IServerStreamWriter<ItemResultTO> responseStream, ServerCallContext context)
         {
-            try
+            var createdItems =
+                await service.CreateItems(request.Data.Select(mapper.Map<ItemCreateSpec>), CancellationToken.None);
+            foreach (var createdItem in createdItems)
             {
-                var createdItems =
-                    await service.CreateItems(request.Data.Select(mapper.Map<ItemCreateSpec>), CancellationToken.None);
-                foreach (var createdItem in createdItems.Select(mapper.Map<ItemTO>))
-                {
-                    await responseStream.WriteAsync(new ItemResultTO
-                    {
-                        Item = createdItem
-                    });
-                }
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Exception while trying to create items");
-                await responseStream.WriteAsync(new ItemResultTO
-                {
-                    Error = new ErrorTO
-                    {
-                        Message = e.Message
-                    }
-                });
+                await responseStream.WriteAsync(mapper.Map<ItemResultTO>(createdItem));
             }
         }
 
         public async override Task UpdateItems(ItemUpdateRequestTO request,
             IServerStreamWriter<ItemResultTO> responseStream, ServerCallContext context)
         {
-            try
+            var updatedItems = await service.UpdateItems(request.Data.Select(mapper.Map<ItemUpdateSpec>), CancellationToken.None);
+            foreach (var updatedItem in updatedItems)
             {
-                var updatedItems = await service.UpdateItems(request.Data.Select(mapper.Map<ItemUpdateSpec>), CancellationToken.None);
-                foreach (var updatedItem in updatedItems.Select(mapper.Map<ItemTO>))
-                {
-                    await responseStream.WriteAsync(new ItemResultTO
-                    {
-                        Item = updatedItem
-                    });
-                }
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Exception while trying to update items");
-                await responseStream.WriteAsync(new ItemResultTO
-                {
-                    Error = new ErrorTO
-                    {
-                        Message = e.Message
-                    }
-                });
+                await responseStream.WriteAsync(mapper.Map<ItemResultTO>(updatedItem), CancellationToken.None);
             }
         }
 

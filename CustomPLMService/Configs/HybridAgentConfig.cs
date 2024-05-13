@@ -1,5 +1,7 @@
-﻿namespace CustomPLMService.Configs
+﻿using System.Diagnostics.CodeAnalysis;
+namespace CustomPLMService.Configs
 {
+    [ExcludeFromCodeCoverage]
     public class HybridAgentConfig
     {
         public const string Key = "HybridAgent";

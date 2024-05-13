@@ -1,10 +1,12 @@
 ﻿using CustomPLMService.Contract.Models.Metadata;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 namespace CustomPLMService.Contract.Models.Items;
 
 /// <summary>
 /// Represents item update specification. This information is used when updating existing objects in external system.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class ItemUpdateSpec
 {
     /// <summary>

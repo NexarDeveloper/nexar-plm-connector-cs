@@ -1,5 +1,6 @@
 ﻿using CustomPLMService.Contract.Models.Metadata;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 namespace CustomPLMService.Contract
 {
@@ -23,13 +24,15 @@ namespace CustomPLMService.Contract
         /// Reads available type identifiers for the given <paramref name="baseType"/> from an external system
         /// </summary>
         /// <param name="baseType">Base object type</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>List of available type identifiers</returns>
-        Task<IEnumerable<TypeId>> ReadTypeIdentifiers(BaseType baseType);
+        Task<IEnumerable<TypeId>> ReadTypeIdentifiers(BaseType baseType, CancellationToken cancellationToken);
         /// <summary>
         /// Reads types for the given <paramref name="typeId"/> from an external system
         /// </summary>
         /// <param name="typeId">List of type identifiers</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>List of types</returns>
-        Task<IEnumerable<Type>> ReadTypes(IEnumerable<TypeId> typeId);
+        Task<IEnumerable<Type>> ReadTypes(IEnumerable<TypeId> typeId, CancellationToken cancellationToken);
     }
 }

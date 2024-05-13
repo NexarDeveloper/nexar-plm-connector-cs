@@ -26,7 +26,7 @@ public class ReadTypesNotificationHandler(
         var responseStream = grpcClient.ReturnReadTypes(cancellationToken: cancellationToken).RequestStream;
         try
         {
-            var types = await plmMetadataService.ReadTypes(notification.Request.Data.Select(mapper.Map<TypeId>));
+            var types = await plmMetadataService.ReadTypes(notification.Request.Data.Select(mapper.Map<TypeId>), cancellationToken);
             foreach (var type in types.Select(mapper.Map<TypeTO>))
             {
                 await responseStream.WriteAsync(new TypeEx

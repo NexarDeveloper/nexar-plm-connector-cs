@@ -31,32 +31,14 @@ public class UpdateItemsNotificationHandler(
         {
             var updatedItems =
                 await plmService.UpdateItems(notification.Request.Data.Select(mapper.Map<ItemUpdateSpec>), cancellationToken);
-            foreach (var updatedItem in updatedItems.Select(mapper.Map<ItemTO>))
+            foreach (var updatedItem in updatedItems)
             {
                 await responseStream.WriteAsync(new ItemResultEx
                 {
                     CorrelationId = notification.CorrelationId,
-                    Value = new ItemResultTO
-                    {
-                        Item = updatedItem
-                    }
+                    Value = mapper.Map<ItemResultTO>(updatedItem)
                 }, cancellationToken);
             }
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Exception while trying to update items");
-            await responseStream.WriteAsync(new ItemResultEx
-            {
-                CorrelationId = notification.CorrelationId,
-                Value = new ItemResultTO
-                {
-                    Error = new ErrorTO
-                    {
-                        Message = e.Message
-                    }
-                }
-            }, cancellationToken);
         }
         finally
         {

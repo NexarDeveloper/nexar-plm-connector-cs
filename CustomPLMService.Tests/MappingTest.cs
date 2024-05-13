@@ -1,8 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using CustomPLMService.Contract.Models;
 using CustomPLMService.Contract.Models.Items;
+using FluentAssertions;
 using Google.Protobuf;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Xunit;
 using Assert = Xunit.Assert;
 using BaseTypeTO = Altium.PLM.Custom.BaseType;
@@ -18,9 +19,10 @@ using FileResourceTO = Altium.PLM.Custom.FileResource;
 
 namespace CustomPLMService.Tests
 {
+    [ExcludeFromCodeCoverage]
     public class MappingTest
     {
-        private readonly IMapper mapper;
+        private readonly Mapper mapper;
 
         public MappingTest()
         {
@@ -42,6 +44,7 @@ namespace CustomPLMService.Tests
         [Fact]
         public void ItemMappingTest()
         {
+            // Arrange
             var grpcItem = new ItemTO
             {
                 Id = new IdTO
@@ -173,17 +176,19 @@ namespace CustomPLMService.Tests
             });
             grpcItem.Values.Add(listValueAttribute);
 
+            // Act
             var item = mapper.Map<ItemTO>(grpcItem);
-
             var backToGrpc = mapper.Map<ItemTO>(item);
-            Assert.Equal(grpcItem, backToGrpc);
+            
+            // Arrange
+            backToGrpc.Should().BeEquivalentTo(grpcItem);
 
-            Assert.Equal(grpcItem.Id.PrivateId, item.Id.PrivateId);
-            Assert.Equal(grpcItem.Id.PublicId, item.Id.PublicId);
-            Assert.Equal(grpcItem.Id.TypeId.Id, item.Id.TypeId.Id);
-            Assert.Equal(grpcItem.Id.TypeId.Name, item.Id.TypeId.Name);
-            Assert.Equal(grpcItem.Id.TypeId.ApiName, item.Id.TypeId.ApiName);
-            Assert.Equal(grpcItem.Id.TypeId.BaseType.ToString(), item.Id.TypeId.BaseType.ToString());
+            item.Id.PrivateId.Should().Be(grpcItem.Id.PrivateId);
+            item.Id.PublicId.Should().Be(grpcItem.Id.PublicId);
+            item.Id.TypeId.Id.Should().Be(grpcItem.Id.TypeId.Id);
+            item.Id.TypeId.Name.Should().Be(grpcItem.Id.TypeId.Name);
+            item.Id.TypeId.ApiName.Should().Be(grpcItem.Id.TypeId.ApiName);
+            item.Id.TypeId.BaseType.ToString().Should().Be(grpcItem.Id.TypeId.BaseType.ToString());
         }
 
         [Fact]
@@ -206,11 +211,53 @@ namespace CustomPLMService.Tests
             var mappedFileResource = mapper.Map<FileResource>(fileResource);
 
             // Assert
-            Assert.NotNull(mappedFileResource);
-            Assert.Equal(fileName, mappedFileResource.FileName);
-            Assert.Equal(data.Length, mappedFileResource.Data.Length);
+            mappedFileResource.Should().NotBeNull();
+            mappedFileResource.FileName.Should().Be(fileName);
+            mappedFileResource.Data.Length.Should().Be(data.Length);
 
-            CollectionAssert.AreEqual(data, mappedFileResource.Data.ToArray());
+            mappedFileResource.Data.ToArray().Should().BeEquivalentTo(data);
+        }
+
+        [Fact]
+        public void ItemResultMapping_ItemProvided()
+        {
+            // Arrange
+            var itemResult = new ItemResult
+            {
+                Item = new Item
+                {
+                    Id = new Id
+                    {
+                        PublicId = "testID"
+                    }
+                }
+            };
+
+            // Act
+            var mappedItemResult = mapper.Map<Altium.PLM.Custom.ItemResult>(itemResult);
+
+            // Assert
+            mappedItemResult?.Item.Should().NotBeNull();
+            mappedItemResult?.Item?.Id?.PublicId.Should().Be(itemResult.Item.Id.PublicId);
+            mappedItemResult?.Error.Should().BeNull();
+        }
+
+        [Fact]
+        public void ItemResultMapping_ErrorProvided()
+        {
+            // Arrange
+            var itemResult = new ItemResult
+            {
+                ErrorMessage = "SomeTestErrorMessage"
+            };
+
+            // Act
+            var mappedItemResult = mapper.Map<Altium.PLM.Custom.ItemResult>(itemResult);
+
+            // Assert
+            mappedItemResult?.Item.Should().BeNull();
+            mappedItemResult?.Error.Should().NotBeNull();
+            mappedItemResult?.Error.Message.Should().Be(itemResult.ErrorMessage);
         }
     }
 }

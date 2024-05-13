@@ -1,9 +1,11 @@
-﻿using CustomPLMService.Contract.Models.Items;
+﻿using System.Diagnostics.CodeAnalysis;
+using CustomPLMService.Contract.Models.Items;
 namespace CustomPLMService.Contract.Models.Metadata;
 
 /// <summary>
 /// Represents attribute list value in external system.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class ListValue
 {
     /// <summary>

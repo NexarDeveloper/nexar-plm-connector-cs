@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 namespace CustomPLMService.Contract.Models.Metadata;
 
 /// <summary>
 /// Represents attribute specification in external system.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class AttributeSpec
 {
     /// <summary>

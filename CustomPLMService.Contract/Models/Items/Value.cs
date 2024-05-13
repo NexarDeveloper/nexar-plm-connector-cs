@@ -1,9 +1,11 @@
-﻿using CustomPLMService.Contract.Models.Metadata;
+﻿using System.Diagnostics.CodeAnalysis;
+using CustomPLMService.Contract.Models.Metadata;
 namespace CustomPLMService.Contract.Models.Items;
 
 /// <summary>
 /// Represents value in external system.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class Value
 {
     private readonly object typedValue;

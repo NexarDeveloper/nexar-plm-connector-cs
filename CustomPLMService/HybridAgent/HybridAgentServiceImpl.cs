@@ -1,12 +1,11 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 namespace CustomPLMService.HybridAgent;
 
 public class HybridAgentServiceImpl(IHybridAgent hybridAgent, ILogger<HybridAgentServiceImpl> logger)
-    : IHostedService, IDisposable
+    : IHostedService
 {
     private readonly CancellationTokenSource cancellationTokenSource = new();
     
@@ -24,10 +23,5 @@ public class HybridAgentServiceImpl(IHybridAgent hybridAgent, ILogger<HybridAgen
         logger.LogInformation("Hybrid Agent Service stopping");
         await cancellationTokenSource.CancelAsync();
         logger.LogInformation("Hybrid Agent Service stopped");
-    }
-
-    public void Dispose()
-    {
-        logger.LogInformation("Hybrid Agent Service disposing");
     }
 }

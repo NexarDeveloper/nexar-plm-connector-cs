@@ -28,7 +28,7 @@ public class ReadTypeIdentifiersNotificationHandler(
         {
             var typeIdentifiers =
                 await plmMetadataService.ReadTypeIdentifiers(
-                    mapper.Map<BaseType>(notification.Request.BaseType));
+                    mapper.Map<BaseType>(notification.Request.BaseType), cancellationToken);
             foreach (var typeId in typeIdentifiers.Select(mapper.Map<TypeIdTO>))
             {
                 await responseStream.WriteAsync(new TypeIdEx

@@ -8,7 +8,7 @@ namespace CustomPLMService.Interceptors;
 
 public class UserContextInterceptor(IContext userContext, IMapper mapper) : Interceptor
 {
-    public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(
+    public async override Task<TResponse> UnaryServerHandler<TRequest, TResponse>(
         TRequest request,
         ServerCallContext context,
         UnaryServerMethod<TRequest, TResponse> continuation)

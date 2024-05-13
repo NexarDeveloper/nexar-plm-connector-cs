@@ -1,8 +1,10 @@
-﻿namespace CustomPLMService.Contract.Models.Items;
+﻿using System.Diagnostics.CodeAnalysis;
+namespace CustomPLMService.Contract.Models.Items;
 
 /// <summary>
 /// Represents attribute value in external system.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class AttributeValue
 {
     /// <summary>

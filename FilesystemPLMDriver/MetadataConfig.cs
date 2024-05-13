@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 namespace FilesystemPLMDriver
 {
+    [ExcludeFromCodeCoverage]
     public class MetadataConfig
     {
         public const string Key = "Metadata";

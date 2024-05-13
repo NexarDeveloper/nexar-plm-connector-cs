@@ -74,7 +74,7 @@ namespace CustomPLMService.Contract
         /// <param name="cancellationToken"></param>
         /// <returns>List of created items</returns>
         /// <seealso cref="BaseType"/>
-        Task<IEnumerable<Item>> CreateItems(IEnumerable<ItemCreateSpec> items, CancellationToken cancellationToken);
+        Task<IEnumerable<ItemResult>> CreateItems(IEnumerable<ItemCreateSpec> items, CancellationToken cancellationToken);
 
         /// <summary>
         /// Reads items with specified <paramref name="plmIds"/> from an external system
@@ -91,7 +91,7 @@ namespace CustomPLMService.Contract
         /// <param name="cancellationToken"></param>
         /// <returns>List of updated items</returns>
         /// <seealso cref="BaseType"/>
-        Task<IEnumerable<Item>> UpdateItems(IEnumerable<ItemUpdateSpec> updateSpecs, CancellationToken cancellationToken);
+        Task<IEnumerable<ItemResult>> UpdateItems(IEnumerable<ItemUpdateSpec> updateSpecs, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes from an external system items with specified <paramref name="ids"/>

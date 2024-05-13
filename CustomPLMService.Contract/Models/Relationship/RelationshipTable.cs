@@ -1,6 +1,7 @@
 using CustomPLMService.Contract.Models.Items;
 using CustomPLMService.Contract.Models.Metadata;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 namespace CustomPLMService.Contract.Models.Relationship
 {
 
@@ -9,6 +10,7 @@ namespace CustomPLMService.Contract.Models.Relationship
     /// <summary>
     /// Represents object relationships table in external system. This table contains list of relationships of the object with other objects.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class RelationshipTable
     {
         /// <summary>
