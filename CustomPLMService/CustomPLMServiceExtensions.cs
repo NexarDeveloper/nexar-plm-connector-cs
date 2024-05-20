@@ -39,7 +39,7 @@ public static class CustomPLMServiceExtensions
         return services;
     }
 
-    public static IServiceCollection AddHybridAgent(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddHybridAgent(this IServiceCollection services, IConfiguration configuration, bool allowUnsafeConnections = false)
     {
         var hybridAgentConfig = new HybridAgentConfig();
         configuration.GetSection(HybridAgentConfig.Key).Bind(hybridAgentConfig);
@@ -53,13 +53,20 @@ public static class CustomPLMServiceExtensions
             {
                 o.Address = new Uri(hybridAgentConfig.Uri);
                 o.CallOptionsActions.Add(opt => opt.CallOptions.WithDeadline(DateTime.UtcNow.AddSeconds(hybridAgentConfig.DeadlineInSeconds)));
+
+                o.ChannelOptionsActions.Add((opt) =>
+                {
+                    opt.UnsafeUseInsecureChannelCallCredentials = allowUnsafeConnections;
+                });
             })
             .AddCallCredentials((_, metadata) =>
             {
-                if (!string.IsNullOrEmpty(hybridAgentConfig.ApiKey))
-                {
-                    metadata.Add("Authorization", $"{hybridAgentConfig.ApiKey}");
-                }
+                if (string.IsNullOrEmpty(hybridAgentConfig.ApiKey))
+                    return Task.CompletedTask;
+
+                metadata.Add("Authorization", $"{hybridAgentConfig.ApiKey}");
+                metadata.Add("TenantId", $"{hybridAgentConfig.TenantId}");
+                metadata.Add("AgentId", $"{hybridAgentConfig.AgentId}");
 
                 return Task.CompletedTask;
             }).ConfigureChannel(o =>

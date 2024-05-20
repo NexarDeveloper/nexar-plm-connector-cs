@@ -6,6 +6,7 @@ using AutoMapper;
 using CustomPLMService.Contract;
 using CustomPLMService.Contract.Models.Metadata;
 using CustomPLMService.HybridAgent.Mediator.Notifications;
+using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using TypeTO = Altium.PLM.Custom.Type;
@@ -23,7 +24,9 @@ public class ReadTypesNotificationHandler(
     {
         logger.LogInformation("Handling Read Types request");
 
-        var responseStream = grpcClient.ReturnReadTypes(cancellationToken: cancellationToken).RequestStream;
+        var responseStream = grpcClient.ReturnReadTypes(
+            [new Metadata.Entry(Constants.CorrelationIdKey, notification.CorrelationId)],
+            cancellationToken: cancellationToken).RequestStream;
         try
         {
             var types = await plmMetadataService.ReadTypes(notification.Request.Data.Select(mapper.Map<TypeId>), cancellationToken);
@@ -31,7 +34,6 @@ public class ReadTypesNotificationHandler(
             {
                 await responseStream.WriteAsync(new TypeEx
                 {
-                    CorrelationId = notification.CorrelationId,
                     Value = type
                 }, cancellationToken);
             }

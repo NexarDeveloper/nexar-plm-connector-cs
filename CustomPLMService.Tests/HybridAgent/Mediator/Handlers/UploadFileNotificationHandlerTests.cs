@@ -53,9 +53,8 @@ public class UploadFileNotificationHandlerTests
         // Assert
         grpcClientMock.Verify(m => m.ReturnUploadFileAsync(
                 It.Is<FileResourceResponseEx>(v =>
-                    v.CorrelationId == notification.CorrelationId &&
                     v.Value.Id == fileId),
-                It.IsAny<Metadata>(),
+                It.Is<Metadata>(metadata => metadata.Get(Constants.CorrelationIdKey).Value == notification.CorrelationId),
                 It.IsAny<DateTime?>(),
                 cancellationToken)
             , Times.Once);

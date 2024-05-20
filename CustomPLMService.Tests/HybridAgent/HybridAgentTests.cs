@@ -4,11 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Altium.PLM.Custom;
 using Altium.PLM.Custom.Reverse;
+using CustomPLMService.Configs;
 using FluentAssertions;
 using Grpc.Core;
 using Grpc.Core.Testing;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 using Void = Altium.PLM.Custom.Void;
@@ -38,16 +40,22 @@ public class HybridAgentTests
             It.IsAny<CancellationToken>())
         ).Returns(grpcServerResponseMock);
 
-        hybridAgent = new CustomPLMService.HybridAgent.HybridAgent(grpcClientMock.Object, mediatorMock.Object, loggerMock.Object);
+        var configMock = new Mock<IOptions<HybridAgentConfig>>();
+        configMock.SetupGet(m => m.Value).Returns(new HybridAgentConfig
+        {
+            OnExceptionTimeoutInSeconds = 0.1
+        });
+
+        hybridAgent = new CustomPLMService.HybridAgent.HybridAgent(grpcClientMock.Object, mediatorMock.Object, configMock.Object, loggerMock.Object);
     }
 
     [Fact(Timeout = 1000)]
     public async Task Run_StopsWhenCancellationTokenCancelled()
     {
         // Arrange
-        grpcServerResponseStream.Setup(m => m.MoveNext(It.IsAny<CancellationToken>())).Callback(async () =>
+        grpcServerResponseStream.Setup(m => m.MoveNext(It.IsAny<CancellationToken>())).Callback(() =>
         {
-            await cancellationTokenSource.CancelAsync();
+            cancellationTokenSource.CancelAsync().Wait();
         }).ReturnsAsync(false);
 
         // Act
@@ -79,7 +87,7 @@ public class HybridAgentTests
         VerifyLogger(LogLevel.Debug, "Deadline Exceeded", Times.Once());
     }
 
-    [Fact(Timeout = 1000)]
+    [Fact(Timeout = 2000)]
     public async Task Run_ContinuesIfAnyExceptionIsThrown()
     {
         // Arrange
@@ -174,7 +182,7 @@ public class HybridAgentTests
         mediatorMock.Verify(m => m.Publish(It.IsAny<INotification>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce());
         VerifyLogger(LogLevel.Error, "Unexpected mediator error occured", Times.AtLeastOnce());
     }
-    
+
     [Fact(Timeout = 1000)]
     public async Task Run_DoesntBlockOnMultipleCalls()
     {

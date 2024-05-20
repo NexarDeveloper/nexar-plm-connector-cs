@@ -6,6 +6,7 @@ using AutoMapper;
 using CustomPLMService.Contract;
 using CustomPLMService.Contract.Models;
 using CustomPLMService.HybridAgent.Mediator.Notifications;
+using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -27,12 +28,13 @@ public class IsOperationSupportedNotificationHandler(
             await plmService.IsOperationSupported(
                 mapper.Map<SupportedOperation>(notification.Request.Operation), cancellationToken);
         await grpcClient.ReturnIsOperationSupportedAsync(new OperationSupportedResponseEx
-        {
-            CorrelationId = notification.CorrelationId,
-            Value = new OperationSupportedResponseTO
             {
-                IsSupported = isSupported
-            }
-        }, cancellationToken: cancellationToken);
+                Value = new OperationSupportedResponseTO
+                {
+                    IsSupported = isSupported
+                }
+            },
+            [new Metadata.Entry(Constants.CorrelationIdKey, notification.CorrelationId)]
+            , cancellationToken: cancellationToken);
     }
 }

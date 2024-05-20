@@ -7,6 +7,7 @@ using CustomPLMService.Contract;
 using CustomPLMService.Contract.Models.Items;
 using CustomPLMService.Contract.Models.Metadata;
 using CustomPLMService.HybridAgent.Mediator.Notifications;
+using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using RelationshipTableTO = Altium.PLM.Custom.RelationshipTable;
@@ -24,7 +25,9 @@ public class ReadRelationshipNotificationHandler(
     {
         logger.LogInformation("Handling Read Relationships request");
 
-        var responseStream = grpcClient.ReturnReadRelationships(cancellationToken: cancellationToken).RequestStream;
+        var responseStream = grpcClient.ReturnReadRelationships(
+            [new Metadata.Entry(Constants.CorrelationIdKey, notification.CorrelationId)],
+            cancellationToken: cancellationToken).RequestStream;
 
         try
         {
@@ -35,7 +38,6 @@ public class ReadRelationshipNotificationHandler(
             {
                 await responseStream.WriteAsync(new RelationshipTableEx
                 {
-                    CorrelationId = notification.CorrelationId,
                     Value = relationship
                 }, cancellationToken);
             }

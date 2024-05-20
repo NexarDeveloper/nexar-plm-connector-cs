@@ -5,6 +5,7 @@ using AutoMapper;
 using CustomPLMService.Contract;
 using CustomPLMService.Contract.Models.Authentication;
 using CustomPLMService.HybridAgent.Mediator.Notifications;
+using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using AuthResultTO = Altium.PLM.Custom.AuthResult;
@@ -37,9 +38,10 @@ public class TestAccessNotificationHandler(
         }
 
         await grpcClient.ReturnTestAccessAsync(new AuthResultEx
-        {
-            Value = authResult,
-            CorrelationId = notification.CorrelationId
-        }, cancellationToken: cancellationToken);
+            {
+                Value = authResult
+            },
+            [new Metadata.Entry(Constants.CorrelationIdKey, notification.CorrelationId)],
+            cancellationToken: cancellationToken);
     }
 }

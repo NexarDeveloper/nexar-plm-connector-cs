@@ -1,11 +1,10 @@
-﻿using CustomPLMService;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using CustomPLMService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Diagnostics.CodeAnalysis;
-
 namespace FilesystemPLMDriver
 {
     [ExcludeFromCodeCoverage]
@@ -19,7 +18,7 @@ namespace FilesystemPLMDriver
             services.AddPLMServices<FileSystemPlmMetadataService, FileSystemPlmService>();
 
             // Comment if you don't want to use Hybrid Agent mode (Generic Connector opens connection to Altium 365)
-            services.AddHybridAgent(configuration);
+            services.AddHybridAgent(configuration, true);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

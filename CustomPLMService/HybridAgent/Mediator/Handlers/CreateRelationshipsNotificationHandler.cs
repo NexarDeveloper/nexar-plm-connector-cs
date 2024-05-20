@@ -6,6 +6,7 @@ using AutoMapper;
 using CustomPLMService.Contract;
 using CustomPLMService.Contract.Models.Relationship;
 using CustomPLMService.HybridAgent.Mediator.Notifications;
+using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using VoidTO = Altium.PLM.Custom.Void;
@@ -22,13 +23,14 @@ public class CreateRelationshipsNotificationHandler(
     public async Task Handle(CreateRelationshipsNotification notification, CancellationToken cancellationToken)
     {
         logger.LogInformation("Handling Create Relationships request");
-        
+
         await plmService.CreateRelationships(
             notification.Request.Relationships.Select(mapper.Map<RelationshipTable>), cancellationToken);
         await grpcClient.ReturnCreateRelationshipsAsync(new VoidEx
-        {
-            CorrelationId = notification.CorrelationId,
-            Value = new VoidTO()
-        }, cancellationToken: cancellationToken);
+            {
+                Value = new VoidTO()
+            },
+            [new Metadata.Entry(Constants.CorrelationIdKey, notification.CorrelationId)],
+            cancellationToken: cancellationToken);
     }
 }

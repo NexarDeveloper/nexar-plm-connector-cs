@@ -67,8 +67,15 @@ public class ReadRelationshipNotificationHandlerTests
         await handler.Handle(notification, cancellationToken);
 
         // Assert
+        grpcClientMock.Verify(m => m.ReturnReadRelationships(
+                It.Is<Metadata>(metadata => metadata.Get(Constants.CorrelationIdKey).Value == notification.CorrelationId),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+
         grpcClientResponseStream.Verify(m => m.WriteAsync(
-                It.Is<RelationshipTableEx>(item => item.CorrelationId == notification.CorrelationId), cancellationToken),
+                It.IsAny<RelationshipTableEx>(),
+                cancellationToken),
             Times.Exactly(3));
         grpcClientResponseStream.Verify(m => m.CompleteAsync(), Times.Once);
     }
@@ -86,7 +93,7 @@ public class ReadRelationshipNotificationHandlerTests
         var cancellationToken = (new CancellationTokenSource()).Token;
         var relationshipRequest = new RelationshipRequest();
         relationshipRequest.Ids.Add(new Altium.PLM.Custom.Id());
-       
+
         var notification = new ReadRelationshipNotification()
         {
             CorrelationId = "TestCorrelationId",
@@ -98,9 +105,9 @@ public class ReadRelationshipNotificationHandlerTests
 
         // Assert
         plmServiceMock.Verify(m => m.ReadRelationships(
-            It.IsAny<IEnumerable<Id>>(), 
-            It.IsAny<RelationshipType>(), 
-            cancellationToken), 
+                It.IsAny<IEnumerable<Id>>(),
+                It.IsAny<RelationshipType>(),
+                cancellationToken),
             Times.Once());
         grpcClientResponseStream.Verify(m => m.CompleteAsync(), Times.Once);
     }

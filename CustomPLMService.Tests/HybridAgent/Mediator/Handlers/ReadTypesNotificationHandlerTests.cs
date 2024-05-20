@@ -65,8 +65,14 @@ public class ReadTypesNotificationHandlerTests
         await handler.Handle(notification, cancellationToken);
 
         // Assert
+        grpcClientMock.Verify(m => m.ReturnReadTypes(
+                It.IsAny<Metadata>(),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
         grpcClientResponseStream.Verify(m => m.WriteAsync(
-                It.Is<TypeEx>(item => item.CorrelationId == notification.CorrelationId), cancellationToken),
+                It.IsAny<TypeEx>(), cancellationToken),
             Times.Exactly(5));
         grpcClientResponseStream.Verify(m => m.CompleteAsync(), Times.Once);
     }

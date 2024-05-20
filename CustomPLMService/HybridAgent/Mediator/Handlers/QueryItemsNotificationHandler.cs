@@ -6,6 +6,7 @@ using AutoMapper;
 using CustomPLMService.Contract;
 using CustomPLMService.Contract.Models.Query;
 using CustomPLMService.HybridAgent.Mediator.Notifications;
+using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Type = CustomPLMService.Contract.Models.Metadata.Type;
@@ -24,7 +25,9 @@ public class QueryItemsNotificationHandler(
     {
         logger.LogInformation("Handling Query Items request");
 
-        var responseStream = grpcClient.ReturnQueryItems(cancellationToken: cancellationToken).RequestStream;
+        var responseStream = grpcClient.ReturnQueryItems(
+            [new Metadata.Entry(Constants.CorrelationIdKey, notification.CorrelationId)], 
+            cancellationToken: cancellationToken).RequestStream;
 
         try
         {
@@ -34,7 +37,6 @@ public class QueryItemsNotificationHandler(
             {
                 await responseStream.WriteAsync(new IdEx
                 {
-                    CorrelationId = notification.CorrelationId,
                     Value = plmItem
                 }, cancellationToken);
             }

@@ -56,10 +56,9 @@ public class TestAccessNotificationHandlerTests
         // Assert
         grpcClientMock.Verify(m => m.ReturnTestAccessAsync(
                 It.Is<AuthResultEx>(v =>
-                    v.CorrelationId == notification.CorrelationId &&
                     v.Value.Success == expectedResponse &&
                     v.Value.Status == expectedStatus),
-                It.IsAny<Metadata>(),
+                It.Is<Metadata>(metadata => metadata.Get(Constants.CorrelationIdKey).Value == notification.CorrelationId),
                 It.IsAny<DateTime?>(),
                 cancellationToken)
             , Times.Once);

@@ -28,53 +28,43 @@ message Request {
 }
 
 message AuthResultEx {
-    string correlationId = 1;
-    AuthResult value = 2;
+    AuthResult value = 1;
 }
 
 message TypeIdEx {
-    string correlationId = 1;
-    TypeId value = 2;
+    TypeId value = 1;
 }
 
 message TypeEx {
-    string correlationId = 1;
-    Type value = 2;
+    Type value = 1;
 }
 
 message ItemEx {
-    string correlationId = 1;
-    Item value = 2;
+    Item value = 1;
 }
 
 message ItemResultEx {
-    string correlationId = 1;
-    ItemResult value = 2;
+    ItemResult value = 1;
 }
 
 message VoidEx {
-    string correlationId = 1;
-    Void value = 2;
+    Void value = 1;
 }
 
 message IdEx {
-    string correlationId = 1;
-    Id value = 2;
+    Id value = 1;
 }
 
 message FileResourceResponseEx {
-    string correlationId = 1;
-    FileResourceResponse value = 2;
+    FileResourceResponse value = 1;
 }
 
 message RelationshipTableEx {
-    string correlationId = 1;
-    RelationshipTable value = 2;
+    RelationshipTable value = 1;
 }
 
 message OperationSupportedResponseEx {
-    string correlationId = 1;
-    OperationSupportedResponse value = 2;
+    OperationSupportedResponse value = 1;
 }
 
 service ReversePLMService {
@@ -93,4 +83,3 @@ service ReversePLMService {
     rpc ReturnIsOperationSupported (OperationSupportedResponseEx) returns (Void);
     rpc ReturnAdvanceState (VoidEx) returns (Void);
 }
-

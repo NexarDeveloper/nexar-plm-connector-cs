@@ -2,9 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Altium.PLM.Custom.Reverse;
+using CustomPLMService.Configs;
 using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using VoidTO = Altium.PLM.Custom.Void;
 
 namespace CustomPLMService.HybridAgent;
@@ -17,6 +19,7 @@ public interface IHybridAgent
 public class HybridAgent(
     ReversePLMService.ReversePLMServiceClient grpcClient,
     IPublisher mediator,
+    IOptions<HybridAgentConfig> hybridAgentConfig,
     ILogger<HybridAgent> logger) : IHybridAgent
 {
     public async Task Run(CancellationToken ct)
@@ -58,6 +61,7 @@ public class HybridAgent(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Unexpected error occured");
+                Thread.Sleep(TimeSpan.FromSeconds(hybridAgentConfig.Value.OnExceptionTimeoutInSeconds));
             }
         }
         

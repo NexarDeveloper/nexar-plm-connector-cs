@@ -55,10 +55,8 @@ public class IsOperationSupportedNotificationHandlerTests
 
         // Assert
         grpcClientMock.Verify(m => m.ReturnIsOperationSupportedAsync(
-                It.Is<OperationSupportedResponseEx>(v => 
-                    v.CorrelationId == notification.CorrelationId && 
-                    v.Value.IsSupported == expectedResult),
-                It.IsAny<Metadata>(),
+                It.Is<OperationSupportedResponseEx>(v => v.Value.IsSupported == expectedResult),
+                It.Is<Metadata>(metadata=>metadata.Get(Constants.CorrelationIdKey).Value == notification.CorrelationId),
                 It.IsAny<DateTime?>(),
                 cancellationToken)
             , Times.Once);

@@ -64,9 +64,13 @@ public class ReadTypeIdentifiersNotificationHandlerTests
         await handler.Handle(notification, cancellationToken);
 
         // Assert
-        grpcClientResponseStream.Verify(m => m.WriteAsync(
-                It.Is<TypeIdEx>(item => item.CorrelationId == notification.CorrelationId), cancellationToken),
-            Times.Exactly(3));
+        grpcClientMock.Verify(m => m.ReturnReadTypeIdentifiers(
+                It.Is<Metadata>(metadata => metadata.Get(Constants.CorrelationIdKey).Value == notification.CorrelationId),
+                It.IsAny<DateTime?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        grpcClientResponseStream.Verify(m => m.WriteAsync(It.IsAny<TypeIdEx>(), cancellationToken), Times.Exactly(3));
         grpcClientResponseStream.Verify(m => m.CompleteAsync(), Times.Once);
     }
 

@@ -52,8 +52,8 @@ public class CreateRelationshipsNotificationHandlerTests
 
         // Assert
         grpcClientMock.Verify(m => m.ReturnCreateRelationshipsAsync(
-                It.Is<VoidEx>(v => v.CorrelationId == notification.CorrelationId),
-                It.IsAny<Metadata>(),
+                It.IsAny<VoidEx>(),
+                It.Is<Metadata>(metadata => metadata.Get(Constants.CorrelationIdKey).Value == notification.CorrelationId),
                 It.IsAny<DateTime?>(),
                 cancellationToken)
             , Times.Once);

@@ -13,5 +13,8 @@ namespace CustomPLMService.Configs
         public int RetryMaxAttempts { get; init; } = 5;
         public double RetryInitialBackoffInSeconds { get; init; } = 1;
         public double RetryMaxBackoffInSeconds { get; init; } = 5;
+        public string TenantId { get; init; }
+        public string AgentId { get; init; }
+        public double OnExceptionTimeoutInSeconds { get; init; } = 2;
     }
 }

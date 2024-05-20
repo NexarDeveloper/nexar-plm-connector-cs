@@ -5,6 +5,7 @@ using AutoMapper;
 using CustomPLMService.Contract;
 using CustomPLMService.Contract.Models.Items;
 using CustomPLMService.HybridAgent.Mediator.Notifications;
+using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using FileResourceResponseTO = Altium.PLM.Custom.FileResourceResponse;
@@ -24,12 +25,13 @@ public class UploadFileNotificationHandler(
 
         var id = await plmService.UploadFile(mapper.Map<FileResource>(notification.Request), cancellationToken);
         await grpcClient.ReturnUploadFileAsync(new FileResourceResponseEx
-        {
-            CorrelationId = notification.CorrelationId,
-            Value = new FileResourceResponseTO
             {
-                Id = id
-            }
-        }, cancellationToken: cancellationToken);
+                Value = new FileResourceResponseTO
+                {
+                    Id = id
+                }
+            },
+            [new Metadata.Entry(Constants.CorrelationIdKey, notification.CorrelationId)],
+            cancellationToken: cancellationToken);
     }
 }

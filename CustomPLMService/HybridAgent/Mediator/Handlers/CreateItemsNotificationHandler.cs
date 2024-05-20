@@ -7,6 +7,7 @@ using AutoMapper;
 using CustomPLMService.Contract;
 using CustomPLMService.Contract.Models.Items;
 using CustomPLMService.HybridAgent.Mediator.Notifications;
+using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ItemTO = Altium.PLM.Custom.Item;
@@ -26,7 +27,9 @@ public class CreateItemsNotificationHandler(
     {
         logger.LogInformation("Handling Create Items request");
 
-        var responseStream = grpcClient.ReturnCreateItems(cancellationToken: cancellationToken).RequestStream;
+        var responseStream = grpcClient.ReturnCreateItems(
+            [new Metadata.Entry(Constants.CorrelationIdKey, notification.CorrelationId)],
+            cancellationToken: cancellationToken).RequestStream;
 
         try
         {
@@ -36,7 +39,6 @@ public class CreateItemsNotificationHandler(
             {
                 await responseStream.WriteAsync(new ItemResultEx
                 {
-                    CorrelationId = notification.CorrelationId,
                     Value = mapper.Map<ItemResultTO>(createdItem)
                 }, cancellationToken);
             }

@@ -65,8 +65,13 @@ public class ReadItemsNotificationHandlerTests
         await handler.Handle(notification, cancellationToken);
 
         // Assert
+        grpcClientMock.Verify(m => m.ReturnReadItems(
+                It.Is<Metadata>(metadata=>metadata.Get(Constants.CorrelationIdKey).Value == notification.CorrelationId),
+            It.IsAny<DateTime?>(),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
         grpcClientResponseStream.Verify(m => m.WriteAsync(
-                It.Is<ItemEx>(item => item.CorrelationId == notification.CorrelationId), cancellationToken),
+                It.IsAny<ItemEx>(), cancellationToken),
             Times.Exactly(2));
         grpcClientResponseStream.Verify(m => m.CompleteAsync(), Times.Once);
     }

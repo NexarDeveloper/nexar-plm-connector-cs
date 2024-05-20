@@ -6,6 +6,7 @@ using AutoMapper;
 using CustomPLMService.Contract;
 using CustomPLMService.Contract.Models.Items;
 using CustomPLMService.HybridAgent.Mediator.Notifications;
+using Grpc.Core;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ItemTO = Altium.PLM.Custom.Item; 
@@ -23,7 +24,9 @@ public class ReadItemsNotificationHandler(
     {
         logger.LogInformation("Handling Read Items request");
 
-        var responseStream = grpcClient.ReturnReadItems(cancellationToken: cancellationToken).RequestStream;
+        var responseStream = grpcClient.ReturnReadItems(
+            [new Metadata.Entry(Constants.CorrelationIdKey, notification.CorrelationId)],
+            cancellationToken: cancellationToken).RequestStream;
 
         try
         {
@@ -32,7 +35,6 @@ public class ReadItemsNotificationHandler(
             {
                 await responseStream.WriteAsync(new ItemEx
                 {
-                    CorrelationId = notification.CorrelationId,
                     Value = item
                 }, cancellationToken);
             }
