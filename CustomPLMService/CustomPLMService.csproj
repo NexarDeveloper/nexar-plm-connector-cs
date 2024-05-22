@@ -42,8 +42,5 @@
     <Protobuf Include="..\Proto\CustomPLM.proto" GrpcServices="Server">
       <Link>Protos\CustomPLM.proto</Link>
     </Protobuf>
-    <Protobuf Include="..\Proto\ReverseCustomPLM.proto" GrpcServices="Client">
-      <Link>Protos\ReverseCustomPLM.proto</Link>
-    </Protobuf>
   </ItemGroup>
 </Project>

@@ -16,14 +16,10 @@ namespace FilesystemPLMDriver
             services.AddSingleton(new ItemRepository(Environment.CurrentDirectory));
 
             services.AddPLMServices<FileSystemPlmMetadataService, FileSystemPlmService>();
-
-            // Comment if you don't want to use Hybrid Agent mode (Generic Connector opens connection to Altium 365)
-            services.AddHybridAgent(configuration, true);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // Comment if you dont want to use Classic mode (Generic Connector acting as a server)
             app.UsePLMServices(env);
         }
     }
