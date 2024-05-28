@@ -238,7 +238,7 @@ namespace FilesystemPLMDriver
 
             var filePath = PrepareFileLocation(id, request.FileName);
             await using var output = new FileStream(filePath, FileMode.Create);
-            await output.WriteAsync(request.Data);
+            await output.WriteAsync(request.Data, cancellationToken);
 
             return id;
         }
