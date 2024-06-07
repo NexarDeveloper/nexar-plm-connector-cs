@@ -17,8 +17,9 @@ namespace CustomPLMService;
 public static class CustomPLMServiceExtensions
 {
     public static IServiceCollection AddPLMServices<TMetadataService,
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(
-        this IServiceCollection services) where TMetadataService : class, ICustomPlmMetadataService
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+        TService>(
+        this IServiceCollection services, CustomPlmServiceConfig customPlmServiceConfig) where TMetadataService : class, ICustomPlmMetadataService
         where TService : class, ICustomPlmService
     {
         services.AddLogging(opt =>
@@ -32,7 +33,11 @@ public static class CustomPLMServiceExtensions
         });
         services.AddAutoMapper(typeof(PlmServiceMappingProfile));
 
-        services.AddGrpc(options => { options.Interceptors.Add<UserContextInterceptor>(); });
+        services.AddGrpc(options =>
+        {
+            options.MaxReceiveMessageSize = customPlmServiceConfig.MaxReceiveMessageSizeInMb * 1024 * 1024;
+            options.Interceptors.Add<UserContextInterceptor>();
+        });
 
         services.AddScoped<IContext, Context>();
         services.AddScoped<ICustomPlmMetadataService, TMetadataService>();
