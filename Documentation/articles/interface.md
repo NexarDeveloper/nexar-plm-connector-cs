@@ -1,6 +1,6 @@
 ﻿# gRPC Interface Description
 
-The **Nexar Generic PLM Connector** expects the service to implement the gRPC endpoint defined
+The **Altium 365 Generic PLM Connector** expects the service to implement the gRPC endpoint defined
 in the **CustomPLM.proto** document. The following is a list of service methods with a brief description:
 
 | Endpoint             | Parameters                 | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |

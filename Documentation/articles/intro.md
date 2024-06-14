@@ -1,4 +1,4 @@
-# Nexar Generic PLM Connector Documentation
+# Altium 365 Generic PLM Connector Documentation
 
 The Generic Connector solution acts as a template for integrating your PLM solution with Altium 365.
 

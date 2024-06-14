@@ -1,4 +1,4 @@
-﻿This document is a step-by-step guide outlining how to make a simple test using the custom connector service and A365 environment.
+﻿This document is a step-by-step guide outlining how to make a simple test using the custom connector service and Altium 365 environment.
 By following it, you will create a simple project, configure the connection to Generic Connector and configure publish process. 
 You will also run basic operations, such as **Sync**, **Part Choice**, **Publish BOM** or **Publish Project**. The goal is that
 with help of content of this document, you will be able to test all the most common operations that are supported by Generic Connector.
