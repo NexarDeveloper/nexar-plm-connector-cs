@@ -1,8 +1,10 @@
 ﻿using Xunit;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.IO;
+using System.Threading;
 using CustomPLMService.Contract.Models.Items;
 using CustomPLMService.Contract.Models.Metadata;
 using FilesystemPLMDriver;
@@ -16,6 +18,7 @@ using Type = CustomPLMService.Contract.Models.Metadata.Type;
 
 namespace CustomPLMService.Tests
 {
+    [ExcludeFromCodeCoverage]
     public class FileSystemServiceTest : IDisposable
     {
         private readonly string serviceDir;
@@ -39,10 +42,10 @@ namespace CustomPLMService.Tests
             };
             var metadataConfigMock = new Mock<IOptions<MetadataConfig>>();
             metadataConfigMock.SetupGet(m => m.Value).Returns(metadataConfig);
-            
+
             var userContextMock = new Mock<IContext>();
             var loggerMock = new Mock<ILogger<FileSystemPlmService>>();
-            
+
             serviceDir = Path.Combine(Environment.CurrentDirectory, "testRepo");
             service = new FileSystemPlmService(new ItemRepository(serviceDir), loggerMock.Object);
             metadataService = new FileSystemPlmMetadataService(metadataConfigMock.Object, userContextMock.Object);
@@ -79,14 +82,16 @@ namespace CustomPLMService.Tests
             updateSpec.Values.Add(StringAttribute("name", "nameValue"));
             updateSpec.Values.Add(StringAttribute("description", "descriptionUpdated"));
 
-            var updated = await service.UpdateItem(updateSpec);
+            var result = await service.UpdateItems(new[] { updateSpec }, CancellationToken.None);
+            var updated = result.First().Item;
             Assert.Equal(created.Id, updated.Id);
             Assert.Equal(2, updated.Values.Count);
             Assert.Equal("nameValue", StringAttribute(updated, "name"));
             Assert.Equal("descriptionUpdated", StringAttribute(updated, "description"));
 
             // read item
-            var item = await service.ReadItem(created.Id);
+            var items = await service.ReadItems(new[] { created.Id }, CancellationToken.None);
+            var item = items.First();
             Assert.Equal(created.Id, item.Id);
             Assert.Equal(2, item.Values.Count);
             Assert.Equal("nameValue", StringAttribute(item, "name"));
@@ -103,14 +108,15 @@ namespace CustomPLMService.Tests
                 Id = "ECO",
                 BaseType = BaseType.Change
             };
-            var eco = (await metadataService.ReadTypes(SingletonList(ecoId))).First();
+            var eco = (await metadataService.ReadTypes(new[] { ecoId }, CancellationToken.None)).First();
             var createSpec = new ItemCreateSpec
             {
                 Metadata = eco,
             };
             createSpec.Values.Add(StringAttribute("name", "nameValue"));
             createSpec.Values.Add(StringAttribute("description", "descriptionValue"));
-            var created = await service.CreateItem(createSpec);
+            var createResult = await service.CreateItems(new[] { createSpec }, CancellationToken.None);
+            var created = createResult.First().Item;
             Assert.NotNull(created.Id);
             Assert.Equal(ecoId, created.Id.TypeId);
             Assert.NotNull(created.Id.PrivateId);
@@ -129,14 +135,16 @@ namespace CustomPLMService.Tests
             updateSpec.Values.Add(StringAttribute("name", "nameValue"));
             updateSpec.Values.Add(StringAttribute("description", "descriptionUpdated"));
 
-            var updated = await service.UpdateItem(updateSpec);
+            var updateResult = await service.UpdateItems(new[] { updateSpec }, CancellationToken.None);
+            var updated = updateResult.First().Item;
             Assert.Equal(created.Id, updated.Id);
             Assert.Equal(2, updated.Values.Count);
             Assert.Equal("nameValue", StringAttribute(updated, "name"));
             Assert.Equal("descriptionUpdated", StringAttribute(updated, "description"));
 
             // read item
-            var item = await service.ReadItem(created.Id);
+            var readResult = await service.ReadItems(new[] { created.Id }, CancellationToken.None);
+            var item = readResult.First();
             Assert.Equal(created.Id, item.Id);
             Assert.Equal(2, item.Values.Count);
             Assert.Equal("nameValue", StringAttribute(item, "name"));
@@ -154,20 +162,20 @@ namespace CustomPLMService.Tests
             var capacitor = (await metadataService.ReadTypes(new List<TypeId>
             {
                 capacitorId
-            })).First();
+            }, CancellationToken.None)).First();
             var createSpec = new ItemCreateSpec
             {
                 Metadata = capacitor,
             };
             createSpec.Values.Add(StringAttribute("name", "nameValue"));
             createSpec.Values.Add(StringAttribute("description", "descriptionValue"));
-            var created = await service.CreateItem(createSpec);
+            var created = await service.CreateItems(new[] { createSpec }, CancellationToken.None);
 
-            return (capacitorId, capacitor, created);
+            return (capacitorId, capacitor, created.First().Item);
         }
 
         [Fact]
-        public async Task ShouldReturnNullForNotExistingItem()
+        public async Task ShouldNotReturnAnythingForNotExistingItem()
         {
             var plmId = new Id
             {
@@ -179,9 +187,9 @@ namespace CustomPLMService.Tests
                     Id = "Capacitor"
                 }
             };
-            var result = await service.ReadItem(plmId);
+            var result = await service.ReadItems(new[] { plmId }, CancellationToken.None);
 
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -201,9 +209,10 @@ namespace CustomPLMService.Tests
                 Name = "Resistor",
                 Id = "Resistor"
             };
-            var capacitor = (await metadataService.ReadTypes(SingletonList(capacitorId))).First();
-            var resistor = (await metadataService.ReadTypes(SingletonList(resistorId))).First();
+            var capacitor = (await metadataService.ReadTypes(new[] { capacitorId }, CancellationToken.None)).First();
+            var resistor = (await metadataService.ReadTypes(new[] { resistorId }, CancellationToken.None)).First();
 
+            var matchingSpecs = new List<ItemCreateSpec>();
             for (var i = 0; i < count; i++)
             {
                 var matchingSpec = new ItemCreateSpec
@@ -211,21 +220,23 @@ namespace CustomPLMService.Tests
                     Metadata = capacitor,
                 };
                 matchingSpec.Values.Add(StringAttribute("x", "y"));
-                await service.CreateItem(matchingSpec);
+                matchingSpecs.Add(matchingSpec);
             }
+
+            await service.CreateItems(matchingSpecs, CancellationToken.None);
 
             var wrongTypeSpec = new ItemCreateSpec
             {
                 Metadata = resistor,
             };
-            await service.CreateItem(wrongTypeSpec);
+            await service.CreateItems(new[] { wrongTypeSpec }, CancellationToken.None);
 
             var wrongAttributeSpec = new ItemCreateSpec
             {
                 Metadata = capacitor,
             };
             wrongAttributeSpec.Values.Add(StringAttribute("x", "z"));
-            await service.CreateItem(wrongAttributeSpec);
+            await service.CreateItems(new[] { wrongAttributeSpec }, CancellationToken.None);
 
             var q = new Query
             {
@@ -237,7 +248,7 @@ namespace CustomPLMService.Tests
                 Value = "y"
             };
             q.Attrs.Add(att);
-            var found = await service.QueryItems(q, capacitor);
+            var found = await service.QueryItems(q, capacitor, CancellationToken.None);
             Assert.True(count == found.Count());
         }
 
@@ -254,14 +265,6 @@ namespace CustomPLMService.Tests
         private static string StringAttribute(Item item, string name)
         {
             return item.Values.First(attribute => attribute.AttributeId == name).Value;
-        }
-
-        private static IList<T> SingletonList<T>(T item)
-        {
-            return new List<T>
-            {
-                item
-            };
         }
     }
 }

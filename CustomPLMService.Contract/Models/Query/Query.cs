@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 namespace CustomPLMService.Contract.Models.Query;
 
 /// <summary>
 /// Represents query in external system.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class Query
 {
     /// <summary>

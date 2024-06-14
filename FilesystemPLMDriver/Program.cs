@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 namespace FilesystemPLMDriver
 {
+    [ExcludeFromCodeCoverage]
     internal class Program
     {
         public static void Main(string[] args)

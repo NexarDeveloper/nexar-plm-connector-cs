@@ -24,6 +24,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+    <PackageReference Include="NReco.Logging.File" Version="1.2.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CustomPLMService.Contract\CustomPLMService.Contract.csproj" />
@@ -35,7 +36,10 @@
     <Folder Include="Protos\" />
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="..\CustomPLM.proto">
+    <Protobuf Include="..\Proto\Messages.proto" GrpcServices="None">
+      <Link>Protos\Messages.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\Proto\CustomPLM.proto" GrpcServices="Server">
       <Link>Protos\CustomPLM.proto</Link>
     </Protobuf>
   </ItemGroup>

@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 namespace FilesystemPLMDriver.Models;
 
+[ExcludeFromCodeCoverage]
 public class ObjectDto(IdDto id, List<AttributeValueDto> attributes, List<RelationshipTableDto> relationshipTables)
 {
     public ObjectDto() : this(null, [], [])

@@ -1,6 +1,7 @@
 ﻿using CustomPLMService.Contract.Models.Items;
 using CustomPLMService.Contract.Models.Metadata;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 namespace CustomPLMService.Contract.Models.Relationship;
 
@@ -8,6 +9,7 @@ namespace CustomPLMService.Contract.Models.Relationship;
 /// Represents object relationship in external system. Object relationship connects a pair of objects (parent and child).
 /// There are different types of relationships (see <see cref="RelationshipType"/>). 
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class RelationshipRow
 {
     /// <summary>

@@ -8,7 +8,7 @@ public class Context : IContext
 {
     public string Token { get; private set; }
     public Credentials Credentials { get; private set; }
-    public bool Initialized { get; private set; } = false;
+    public bool Initialized { get; private set; }
 
     public void FromAuth(Auth auth)
     {

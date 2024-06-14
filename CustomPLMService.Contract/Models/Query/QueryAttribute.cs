@@ -1,8 +1,10 @@
-﻿namespace CustomPLMService.Contract.Models.Query;
+﻿using System.Diagnostics.CodeAnalysis;
+namespace CustomPLMService.Contract.Models.Query;
 
 /// <summary>
 /// Represents query attribute in external system.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class QueryAttribute
 {
     /// <summary>

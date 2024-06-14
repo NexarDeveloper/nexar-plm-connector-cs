@@ -1,10 +1,12 @@
 ﻿using CustomPLMService.Contract.Models.Metadata;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 namespace CustomPLMService.Contract.Models.Items;
 
 /// <summary>
 /// Represents item creation specification. This information is used when creating new objects in external system.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class ItemCreateSpec
 {
     /// <summary>

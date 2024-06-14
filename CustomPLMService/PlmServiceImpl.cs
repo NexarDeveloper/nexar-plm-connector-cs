@@ -1,11 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Altium.PLM.Custom;
 using AutoMapper;
 using CustomPLMService.Contract;
 using CustomPLMService.Contract.Models;
-using CustomPLMService.Contract.Models.Authentication;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using static Altium.PLM.Custom.AuthResult;
@@ -28,7 +26,6 @@ using TypeIdTO = Altium.PLM.Custom.TypeId;
 using IdTO = Altium.PLM.Custom.Id;
 using ItemTO = Altium.PLM.Custom.Item;
 using ItemResultTO = Altium.PLM.Custom.ItemResult;
-using ErrorTO = Altium.PLM.Custom.Error;
 using FileResource = CustomPLMService.Contract.Models.Items.FileResource;
 using ItemUpdateRequestTO = Altium.PLM.Custom.ItemUpdateRequest;
 using FileResourceTO = Altium.PLM.Custom.FileResource;
@@ -46,61 +43,58 @@ using TypeId = CustomPLMService.Contract.Models.Metadata.TypeId;
 
 namespace CustomPLMService
 {
-    public class PlmServiceImpl(ICustomPlmMetadataService metadataService, ICustomPlmService service, IMapper mapper, ILogger<PlmServiceImpl> logger) : PLMService.PLMServiceBase
+    public class PlmServiceImpl(
+        ICustomPlmMetadataService metadataService,
+        ICustomPlmService service,
+        IMapper mapper,
+        ILogger<PlmServiceImpl> logger) : PLMService.PLMServiceBase
     {
         public async override Task<AuthResultTO> TestAccess(AuthTO request, ServerCallContext context)
         {
-            var authResult = new AuthResultTO
-            {
-                Success = false
-            };
+            var authResult = new AuthResultTO();
 
-            if (await service.TestAccess(mapper.Map<Auth>(request)))
+            if (await service.TestAccess(mapper.Map<Auth>(request), context.CancellationToken))
             {
                 authResult.Success = true;
                 authResult.Status = Types.Status.Success;
             }
             else
             {
+                authResult.Success = false;
                 authResult.Status = Types.Status.InvalidCredentials;
                 logger.LogInformation("Invalid Credentials Provided");
             }
-            
+
             return authResult;
         }
 
         public async override Task ReadTypeIdentifiers(TypeRequestTO request,
             IServerStreamWriter<TypeIdTO> responseStream, ServerCallContext context)
         {
-            var typeIdentifiers = await metadataService.ReadTypeIdentifiers(mapper.Map<BaseType>(request.BaseType));
-            foreach (var plmTypeId in typeIdentifiers)
+            var typeIdentifiers = await metadataService.ReadTypeIdentifiers(mapper.Map<BaseType>(request.BaseType), context.CancellationToken);
+            foreach (var typeId in typeIdentifiers.Select(mapper.Map<TypeIdTO>))
             {
-                await responseStream.WriteAsync(mapper.Map<TypeIdTO>(plmTypeId));
+                await responseStream.WriteAsync(typeId, context.CancellationToken);
             }
         }
-
 
         public async override Task ReadTypes(TypeIdRequestTO request, IServerStreamWriter<TypeTO> responseStream,
             ServerCallContext context)
         {
-            var types = await metadataService.ReadTypes(request.Data.Select(mapper.Map<TypeId>));
-            foreach (var type in types)
+            var types = await metadataService.ReadTypes(request.Data.Select(mapper.Map<TypeId>), context.CancellationToken);
+            foreach (var type in types.Select(mapper.Map<TypeTO>))
             {
-                await responseStream.WriteAsync(mapper.Map<TypeTO>(type));
+                await responseStream.WriteAsync(type, context.CancellationToken);
             }
         }
 
         public async override Task ReadItems(IdRequestTO request, IServerStreamWriter<ItemTO> responseStream,
             ServerCallContext context)
         {
-            foreach (var id in request.Data.Select(mapper.Map<Id>))
+            var items = await service.ReadItems(request.Data.Select(mapper.Map<Id>), context.CancellationToken);
+            foreach (var item in items.Select(mapper.Map<ItemTO>))
             {
-                var item = await service.ReadItem(id);
-                if (item is not null)
-                {
-                    var message = mapper.Map<ItemTO>(item);
-                    await responseStream.WriteAsync(message);
-                }
+                await responseStream.WriteAsync(item, context.CancellationToken);
             }
         }
 
@@ -108,68 +102,37 @@ namespace CustomPLMService
             ServerCallContext context)
         {
             var plmItems = await service.QueryItems(mapper.Map<Query>(request.Query),
-                mapper.Map<Type>(request.Type));
-            foreach (var plmItem in plmItems)
+                mapper.Map<Type>(request.Type), context.CancellationToken);
+            foreach (var plmItem in plmItems.Select(mapper.Map<IdTO>))
             {
-                if (plmItem is not null)
-                {
-                    await responseStream.WriteAsync(mapper.Map<IdTO>(plmItem));
-                }
+                await responseStream.WriteAsync(plmItem, context.CancellationToken);
             }
         }
 
         public async override Task CreateItems(ItemCreateRequestTO request,
             IServerStreamWriter<ItemResultTO> responseStream, ServerCallContext context)
         {
-            foreach (var itemSpec in request.Data.Select(mapper.Map<ItemCreateSpec>))
+            var createdItems =
+                await service.CreateItems(request.Data.Select(mapper.Map<ItemCreateSpec>), context.CancellationToken);
+            foreach (var createdItem in createdItems)
             {
-                var result = new ItemResultTO();
-                try
-                {
-                    var createdItem = mapper.Map<ItemTO>(await service.CreateItem(itemSpec));
-                    result.Item = createdItem;
-                }
-                catch (Exception e)
-                {
-                    logger.LogError(e, "Exception while trying to create items");
-                    result.Error = new ErrorTO
-                    {
-                        Message = e.Message
-                    };
-                }
-
-                await responseStream.WriteAsync(result);
+                await responseStream.WriteAsync(mapper.Map<ItemResultTO>(createdItem), context.CancellationToken);
             }
         }
-
 
         public async override Task UpdateItems(ItemUpdateRequestTO request,
             IServerStreamWriter<ItemResultTO> responseStream, ServerCallContext context)
         {
-            foreach (var item in request.Data.Select(mapper.Map<ItemUpdateSpec>))
+            var updatedItems = await service.UpdateItems(request.Data.Select(mapper.Map<ItemUpdateSpec>), context.CancellationToken);
+            foreach (var updatedItem in updatedItems)
             {
-                var result = new ItemResultTO();
-                try
-                {
-                    var updatedItem = await service.UpdateItem(item);
-                    result.Item = mapper.Map<ItemTO>(updatedItem);
-                }
-                catch (Exception e)
-                {
-                    logger.LogError(e, "Exception while trying to update items");
-                    result.Error = new ErrorTO
-                    {
-                        Message = e.Message
-                    };
-                }
-
-                await responseStream.WriteAsync(result);
+                await responseStream.WriteAsync(mapper.Map<ItemResultTO>(updatedItem), context.CancellationToken);
             }
         }
 
         public async override Task<FileResourceResponseTO> UploadFile(FileResourceTO request, ServerCallContext context)
         {
-            var id = await service.UploadFile(mapper.Map<FileResource>(request));
+            var id = await service.UploadFile(mapper.Map<FileResource>(request), context.CancellationToken);
 
             return new FileResourceResponseTO
             {
@@ -180,43 +143,41 @@ namespace CustomPLMService
         public async override Task<VoidTO> CreateRelationships(CreateRelationshipsRequestTO request,
             ServerCallContext context)
         {
-            await service.CreateRelationships(request.Relationships.Select(mapper.Map<RelationshipTable>));
+            await service.CreateRelationships(request.Relationships.Select(mapper.Map<RelationshipTable>), context.CancellationToken);
             return new VoidTO();
         }
 
-        public async override Task<OperationSupportedResponseTO> IsOperationSupported(OperationSupportedRequestTO request,
+        public async override Task<OperationSupportedResponseTO> IsOperationSupported(
+            OperationSupportedRequestTO request,
             ServerCallContext context)
         {
             return new OperationSupportedResponseTO
             {
-                IsSupported = await service.IsOperationSupported(mapper.Map<SupportedOperation>(request.Operation))
+                IsSupported = await service.IsOperationSupported(mapper.Map<SupportedOperation>(request.Operation), context.CancellationToken)
             };
         }
 
         public async override Task<VoidTO> DeleteItems(IdRequestTO request, ServerCallContext context)
         {
-            foreach (var id in request.Data)
-            {
-                await service.DeleteItem(mapper.Map<Id>(id));
-            }
-
+            await service.DeleteItems(request.Data.Select(mapper.Map<Id>), context.CancellationToken);
             return new VoidTO();
         }
 
         public async override Task<VoidTO> AdvanceState(AdvanceStateRequestTO request, ServerCallContext context)
         {
-            await service.AdvanceState(mapper.Map<Id>(request.Id));
+            await service.AdvanceState(mapper.Map<Id>(request.Id), context.CancellationToken);
             return new VoidTO();
         }
 
         public async override Task ReadRelationships(RelationshipRequestTO request,
             IServerStreamWriter<RelationshipTableTO> responseStream, ServerCallContext context)
         {
-            foreach (var id in request.Ids)
+            var relationships = await service.ReadRelationships(request.Ids.Select(mapper.Map<Id>),
+                mapper.Map<RelationshipType>(request.Type), context.CancellationToken);
+
+            foreach (var relationship in relationships.Select(mapper.Map<RelationshipTableTO>))
             {
-                var relationship = await service.ReadRelationship(mapper.Map<Id>(id),
-                    mapper.Map<RelationshipType>(request.Type));
-                await responseStream.WriteAsync(mapper.Map<RelationshipTableTO>(relationship));
+                await responseStream.WriteAsync(relationship, context.CancellationToken);
             }
         }
     }

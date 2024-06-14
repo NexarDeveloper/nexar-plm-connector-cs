@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 namespace CustomPLMService.Contract.Models.Authentication;
 
 /// <summary>
 /// Provides context for user authentication.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class Auth
 {
     /// <summary>

@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using Altium.PLM.Custom;
 using AutoMapper;
 using AutoMapper.Internal;
 using CustomPLMService.Contract.Models;
-using CustomPLMService.Contract.Models.Authentication;
 using Google.Protobuf.Collections;
 using AttributeSpec = CustomPLMService.Contract.Models.Metadata.AttributeSpec;
 using ItemTO = Altium.PLM.Custom.Item;
@@ -19,6 +17,8 @@ using ValueTO = Altium.PLM.Custom.Value;
 using AttributeSpecTO = Altium.PLM.Custom.AttributeSpec;
 using AttributeValue = CustomPLMService.Contract.Models.Items.AttributeValue;
 using AttributeValueTO = Altium.PLM.Custom.AttributeValue;
+using ItemResultTO = Altium.PLM.Custom.ItemResult;
+using ItemResult = CustomPLMService.Contract.Models.Items.ItemResult;
 using Auth = CustomPLMService.Contract.Models.Authentication.Auth;
 using BaseTypeTO = Altium.PLM.Custom.BaseType;
 using AuthTO = Altium.PLM.Custom.Auth;
@@ -54,6 +54,7 @@ using Value = CustomPLMService.Contract.Models.Items.Value;
 
 namespace CustomPLMService
 {
+    [ExcludeFromCodeCoverage]
     public class PlmServiceMappingProfile : Profile
     {
         public PlmServiceMappingProfile()
@@ -76,6 +77,10 @@ namespace CustomPLMService
             CreateMap<UomValueTO, UomValue>().ReverseMap();
             CreateMap<ValueTO, Value>().ConvertUsing((source, destination, resolutionContext) => MapValueTo(source, resolutionContext));
             CreateMap<Value, ValueTO>().ConvertUsing((source, destination, resolutionContext) => MapValue(source, resolutionContext));
+            CreateMap<ItemResult, ItemResultTO>().ForMember(result => result.Error, opt => opt.MapFrom(src => new Error
+            {
+                Message = src.ErrorMessage
+            }));
 
             // Metadata
             CreateMap<AttributeSpecTO, AttributeSpec>().ReverseMap();

@@ -4,6 +4,7 @@ using CustomPLMService.Contract.Models.Metadata;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 namespace FilesystemPLMDriver
 {
@@ -26,7 +27,7 @@ namespace FilesystemPLMDriver
             this.userContext = userContext;
         }
 
-        public Task<IEnumerable<TypeId>> ReadTypeIdentifiers(BaseType baseType)
+        public Task<IEnumerable<TypeId>> ReadTypeIdentifiers(BaseType baseType, CancellationToken cancellationToken)
         {
             return Task.FromResult(baseType switch
             {
@@ -36,7 +37,7 @@ namespace FilesystemPLMDriver
             });
         }
 
-        public Task<IEnumerable<Type>> ReadTypes(IEnumerable<TypeId> typeId)
+        public Task<IEnumerable<Type>> ReadTypes(IEnumerable<TypeId> typeId, CancellationToken cancellationToken)
         {
             return Task.FromResult(typeId.Select(id =>
             {

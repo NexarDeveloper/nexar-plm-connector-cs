@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CustomPLMService.Contract.Models;
 using CustomPLMService.Contract.Models.Query;
@@ -16,34 +17,96 @@ using Type = CustomPLMService.Contract.Models.Metadata.Type;
 
 namespace FilesystemPLMDriver
 {
-    public class FileSystemPlmService(ItemRepository repository, ILogger<FileSystemPlmService> logger) : ICustomPlmService
+    public class FileSystemPlmService(ItemRepository repository, ILogger<FileSystemPlmService> logger)
+        : ICustomPlmService
     {
-        public Task<Item> CreateItem(ItemCreateSpec item)
+        public Task<IEnumerable<ItemResult>> CreateItems(IEnumerable<ItemCreateSpec> items, CancellationToken cancellationToken)
         {
-            var changes = item.Metadata.Id.BaseType.Equals(BaseType.Change);
-            var dto = changes ? DtoConverter.ToObjectDto(item) : DtoConverter.ToItemDto(item);
+            var result = new List<ItemResult>();
+            foreach (var item in items)
+            {
+                try
+                {
+                    var changes = item.Metadata.Id.BaseType.Equals(BaseType.Change);
+                    var dto = changes ? DtoConverter.ToObjectDto(item) : DtoConverter.ToItemDto(item);
 
-            repository.Store(dto);
-            return Task.FromResult(DtoConverter.ToPlmItem(dto));
+                    repository.Store(dto);
+                    result.Add(new ItemResult
+                    {
+                        Item = DtoConverter.ToPlmItem(dto)
+                    });
+                }
+                catch (Exception e)
+                {
+                    result.Add(new ItemResult
+                    {
+                        IsError = true,
+                        ErrorMessage = e.Message
+                    });
+                }
+            }
+
+            return Task.FromResult((IEnumerable<ItemResult>)result);
         }
 
-        public Task<Item> ReadItem(Id plmId)
+        public Task<IEnumerable<Item>> ReadItems(IEnumerable<Id> plmIds, CancellationToken cancellationToken)
         {
-            var changes = plmId.TypeId.BaseType.Equals(BaseType.Change);
-            var itemDto = repository.Load(plmId.PublicId, changes);
-            return Task.FromResult(itemDto is not null ? DtoConverter.ToPlmItem(itemDto) : null);
+            var result = new List<Item>();
+            foreach (var plmId in plmIds)
+            {
+                var changes = plmId.TypeId.BaseType.Equals(BaseType.Change);
+                var itemDto = repository.Load(plmId.PublicId, changes);
+                if (itemDto is not null)
+                {
+                    result.Add(DtoConverter.ToPlmItem(itemDto));
+                }
+            }
+
+            return Task.FromResult((IEnumerable<Item>)result);
         }
 
-        public Task<Item> UpdateItem(ItemUpdateSpec item)
+        public Task<IEnumerable<ItemResult>> UpdateItems(IEnumerable<ItemUpdateSpec> updateSpecs, CancellationToken cancellationToken)
         {
-            var changes = item.Metadata.Id.BaseType.Equals(BaseType.Change);
-            var dto = changes ? DtoConverter.ToObjectDto(item) : DtoConverter.ToItemDto(item);
+            var result = new List<ItemResult>();
+            foreach (var updateSpecItem in updateSpecs)
+            {
+                try
+                {
+                    var changes = updateSpecItem.Metadata.Id.BaseType.Equals(BaseType.Change);
+                    var dto = changes ? DtoConverter.ToObjectDto(updateSpecItem) : DtoConverter.ToItemDto(updateSpecItem);
 
-            repository.Store(dto);
-            return Task.FromResult(DtoConverter.ToPlmItem(dto));
+                    repository.Store(dto);
+                    result.Add(new ItemResult
+                    {
+                        Item = DtoConverter.ToPlmItem(dto)
+                    });
+                }
+                catch (Exception e)
+                {
+                    result.Add(new ItemResult
+                    {
+                        IsError = true,
+                        ErrorMessage = e.Message
+                    });
+                }
+            }
+
+            return Task.FromResult((IEnumerable<ItemResult>)result);
         }
 
-        public Task<IEnumerable<Id>> QueryItems(Query query, Type type)
+        public Task DeleteItems(IEnumerable<Id> ids, CancellationToken cancellationToken)
+        {
+            foreach (var id in ids)
+            {
+                var dtoId = id.ToIdDto(null);
+                var isChange = id.TypeId.BaseType.Equals(BaseType.Change);
+                repository.DeleteItem(dtoId, isChange);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task<IEnumerable<Id>> QueryItems(Query query, Type type, CancellationToken cancellationToken)
         {
             var allItems = repository.LoadAllItems();
             var filtered = new List<ItemDto>();
@@ -99,7 +162,7 @@ namespace FilesystemPLMDriver
             return Task.FromResult<IEnumerable<Id>>(output);
         }
 
-        public async Task CreateRelationships(IEnumerable<RelationshipTable> tables)
+        public async Task CreateRelationships(IEnumerable<RelationshipTable> tables, CancellationToken cancellationToken)
         {
             var relationshipTables = tables.ToList();
             try
@@ -128,56 +191,54 @@ namespace FilesystemPLMDriver
             }
         }
 
-        public Task DeleteItem(Id id)
+        public Task<IEnumerable<RelationshipTable>> ReadRelationships(IEnumerable<Id> ids, RelationshipType type, CancellationToken cancellationToken)
         {
-            var dtoId = id.ToIdDto(null);
-            var isChange = id.TypeId.BaseType.Equals(BaseType.Change);
-            repository.DeleteItem(dtoId, isChange);
+            var relationships = new List<RelationshipTable>();
+            foreach (var id in ids)
+            {
+                var table = new RelationshipTable
+                {
+                    Id = id,
+                    Type = type
+                };
 
-            return Task.CompletedTask;
+                if (type == RelationshipType.ManufacturerParts)
+                {
+                    table.Rows.AddRange(ManufacturerPartsUtils.GenerateSampleData());
+                }
+
+                relationships.Add(table);
+            }
+
+            return Task.FromResult((IEnumerable<RelationshipTable>)relationships);
         }
 
-        public Task AdvanceState(Id id)
+        public Task AdvanceState(Id id, CancellationToken cancellationToken)
         {
             logger.LogWarning("Advance state is not implemented");
             return Task.CompletedTask;
         }
 
-        public Task<RelationshipTable> ReadRelationship(Id id, RelationshipType type)
-        {
-            var table = new RelationshipTable
-            {
-                Id = id,
-                Type = type
-            };
-
-            if (type == RelationshipType.ManufacturerParts)
-            {
-                table.Rows.AddRange(ManufacturerPartsUtils.GenerateSampleData());
-            }
-
-            return Task.FromResult(table);
-        }
-
-        public Task<bool> TestAccess(Auth auth)
+        public Task<bool> TestAccess(Auth auth, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }
 
-        public Task<bool> IsOperationSupported(SupportedOperation operationType)
+        public Task<bool> IsOperationSupported(SupportedOperation operationType, CancellationToken cancellationToken)
         {
-            var isSupported = operationType is SupportedOperation.CreateChangeOrder or SupportedOperation.ExtractPartChoicesFromAttributes;
-            logger.LogInformation($"Operation '{operationType}' is {(isSupported ? "": "NOT ")}supported");
+            var isSupported = operationType is SupportedOperation.CreateChangeOrder
+                or SupportedOperation.ExtractPartChoicesFromAttributes;
+            logger.LogInformation($"Operation '{operationType}' is {(isSupported ? "" : "NOT ")}supported");
             return Task.FromResult(isSupported);
         }
 
-        public async Task<string> UploadFile(FileResource request)
+        public async Task<string> UploadFile(FileResource request, CancellationToken cancellationToken)
         {
             var id = Guid.NewGuid().ToString();
 
             var filePath = PrepareFileLocation(id, request.FileName);
             await using var output = new FileStream(filePath, FileMode.Create);
-            await output.WriteAsync(request.Data);
+            await output.WriteAsync(request.Data, cancellationToken);
 
             return id;
         }
@@ -187,7 +248,9 @@ namespace FilesystemPLMDriver
         {
             foreach (var relationshipTable in tables)
             {
-                foreach (var directory in from relationshipTableRow in relationshipTable.Rows where !string.IsNullOrWhiteSpace(relationshipTableRow.FileId) select GetDirectoryForId(relationshipTableRow.FileId))
+                foreach (var directory in from relationshipTableRow in relationshipTable.Rows
+                                          where !string.IsNullOrWhiteSpace(relationshipTableRow.FileId)
+                                          select GetDirectoryForId(relationshipTableRow.FileId))
                 {
                     Directory.Delete(directory, true);
                 }

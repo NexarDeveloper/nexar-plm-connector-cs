@@ -1,8 +1,10 @@
-﻿namespace CustomPLMService.Contract.Models.Items;
+﻿using System.Diagnostics.CodeAnalysis;
+namespace CustomPLMService.Contract.Models.Items;
 
 /// <summary>
 /// Represents Unit of Measure value.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class UomValue
 {
     /// <summary>

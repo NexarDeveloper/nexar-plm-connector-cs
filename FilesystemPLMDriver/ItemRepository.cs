@@ -188,7 +188,10 @@ namespace FilesystemPLMDriver
             var fileName = Path.GetFileName(sourceFile);
             var filePath = Path.Combine(destinationDir, fileName);
 
-            File.Copy(sourceFile, filePath, true);
+            if (File.Exists(sourceFile))
+            {
+                File.Copy(sourceFile, filePath, true);
+            }
 
             return filePath;
         }

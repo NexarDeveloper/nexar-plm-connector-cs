@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 namespace CustomPLMService.Contract.Models.Items;
 
 /// <summary>
 /// Represents file resource in external system.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class FileResource
 {
     /// <summary>

@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 namespace CustomPLMService.Middleware;
 
+[ExcludeFromCodeCoverage]
 public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IMiddleware
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
