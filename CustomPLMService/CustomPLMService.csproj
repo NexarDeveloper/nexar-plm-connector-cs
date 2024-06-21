@@ -33,9 +33,6 @@
     <PackageReference Include="AutoMapper" Version="13.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Protos\" />
-  </ItemGroup>
-  <ItemGroup>
     <Protobuf Include="..\Proto\Messages.proto" GrpcServices="None">
       <Link>Protos\Messages.proto</Link>
     </Protobuf>
