@@ -73,9 +73,30 @@ namespace FilesystemPLMDriver
                 try
                 {
                     var changes = updateSpecItem.Metadata.Id.BaseType.Equals(BaseType.Change);
-                    var dto = changes ? DtoConverter.ToObjectDto(updateSpecItem) : DtoConverter.ToItemDto(updateSpecItem);
+                    var dto = changes
+                        ? DtoConverter.ToObjectDto(updateSpecItem)
+                        : DtoConverter.ToItemDto(updateSpecItem);
+                    var item = repository.Load(updateSpecItem.Id.PublicId, changes);
 
-                    repository.Store(dto);
+                    var newAttributes = new List<AttributeValueDto>();
+                    foreach (var changedAttribute in dto.Attributes)
+                    {
+                        var attr = item
+                            .Attributes
+                            .SingleOrDefault(attr => attr.Name == changedAttribute.Name);
+                        if (attr is not null)
+                        {
+                            attr.Value = changedAttribute.Value;
+                        }
+                        else
+                        {
+                            newAttributes.Add(changedAttribute);
+                        }
+                    }
+
+                    item.Attributes.AddRange(newAttributes);
+                    
+                    repository.Store(item);
                     result.Add(new ItemResult
                     {
                         Item = DtoConverter.ToPlmItem(dto)
