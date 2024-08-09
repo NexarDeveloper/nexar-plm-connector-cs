@@ -126,10 +126,9 @@ Participant "Generic Connector" as Connector
 
 
 ## Publish BOM
-Publishing BOM starts with verifying *Auth* data. If the Generic Connector accepts the *Auth* data,
-the Sync process begins. First, it reads all the metadata types. It will then read from PLM all items that are present
-in the BOM. Based on the response, it will create missing items (such as project file, components that were not returned by ReadItems, etc,)
-and request creation of a BOM type relationship between the project and the items. This is illustrated in the following diagram:
+Publishing BOM is a part of Publishing a Project. During the Publish Project operation,
+there will be additional request for creation of a BOM type relationship between the project and the created items. 
+This is illustrated in the following diagram:
 
 ```plantuml
 title Publish BOM
