@@ -181,6 +181,7 @@ TBD
 
 # Publish Project
 Before proceeding, make sure that the project was already released and that the publish operation has been activated (in the **Prerequisites** section).
+Note that BOM publication is part of the publish process.
 In order to publish a project, you will have to open Altium Designer. Right-click on the project then select **Publish to PLM**.
 
 ![Publish Project menu](./images/testing/PublishProjectMenu.png "Publish Project Menu")
@@ -208,43 +209,3 @@ it will disappear from the panel. A far better option is to use **Processes** fr
 It allows you to see both failed and successful runs, and access additional data of the operation
 
 ![Processes View](./images/testing/ProcessesStatus.png "Process status view")
-
-# Publish BOM
-> [!WARNING]
-> There is a known bug in this solution that makes the Publish BOM operation fail if the project is already published and we are 
-> working to correct it. As a workaround, delete the *items* folder that was created in the root directory of the project.
-> (If started in debug mode from IDE, it will be located at *FilesystemPLMDriver\bin\Debug\net8.0*)
-
-In order to be able to start the *Publish BOM* operation, we need to have a proper managed Bill Of Material file. 
-To create one, click **Projects** in the Altium 365 web view. Click the three dots associated with the
-*Single Component Project*, then select **Create Managed BOM**.
-
-![Create Managed BOM](./images/testing/ManagedBOMCreation.png "Create Managed BOM")
-
-This will result in the creation of a new item on the Projects view.
-
-![Managed BOM](./images/testing/ManagedBomOnProjectsView.png "Managed BOM")
-
-Double-click the new BOM tile to enter the Managed BOM view, shown below.
-
-![Managed BOM view](./images/testing/ManagedBOMView.png "Managed BOM View")
-
-There are not a lot of items here, but there are enough to perform simple BOM Publish operation. To start the process,
-navigate to the **Releases** tab. On the tile that represents the BOM release, click the three dots then select **Publish to PLM**.
-
-![Managed BOM publish](./images/testing/ManagedBOMPublish.png)
-
-After the process begins, you might be asked for credentials. These are credentials that will be used during the *Auth* call
-to the CustomPLMService. In this basic implementation of the service, you can provide any data.
-
-![Managed BOM publish credentials](./images/testing/PublishBOMCredentials.png "Managed BOM Publish Credentials View")
-
-In order to monitor the state of this operation, open the **Admin > Processes** view on the Altium 365 web view.
-This allows you to see the current state of the BOM Publish process and any potential error messages. The default view
-shows ongoing instances.
-
-![Ongoing BOM Publish process](./images/testing/PublishBOMProcesStarted.png "Ongoing BOM Publish process view")
-
-To track processes that have been completed, change the value of the drop-down at the upper left side to **Closed**.
-
-![Finished BOM Publish process](./images/testing/PublishBOMProcessFinished.png "Finished BOM Publish process view")
