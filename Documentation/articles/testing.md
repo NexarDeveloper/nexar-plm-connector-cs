@@ -1,6 +1,6 @@
 ﻿This document is a step-by-step guide outlining how to make a simple test using the custom connector service and Altium 365 environment.
 By following it, you will create a simple project, configure the connection to Generic Connector and configure publish process. 
-You will also run basic operations, such as **Sync**, **Part Choice**, **Publish BOM** or **Publish Project**. The goal is that
+You will also run basic operations, such as **Sync**, **Part Choice** or **Publish Project**, which also includes BOM Publication. The goal is that
 with help of content of this document, you will be able to test all the most common operations that are supported by Generic Connector.
 
 # Prerequisites
@@ -10,7 +10,7 @@ with help of content of this document, you will be able to test all the most com
 4. User with administrator role
 
 ## Creation of a Dummy Project
-In order to run Publish BOM or Publish Project operations, there needs to be an actual project to publish. 
+In order to run Publish Project operations, there needs to be an actual project to publish. 
 Since the project does not need to represent an actual working design, we can create a simple, single-component project file. 
 To do so, open Altium Designer and connect to your workspace. From the main menus, select **File > New > Project**. Create an
 empty project called *Single Component Project*
